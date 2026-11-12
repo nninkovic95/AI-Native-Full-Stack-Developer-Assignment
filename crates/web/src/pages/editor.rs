@@ -12,9 +12,10 @@ use yew_router::prelude::*;
 
 use crate::{
     api::{self, FailureKind},
-    editor_js,
+    download_js, editor_js,
     logic::{
         api_shapes::{content_update, title_update},
+        export::{delta_to_markdown, export_file_name},
         save_state::{SaveEvent, SaveState},
         sharing::owner_label,
         validate::normalize_title,
@@ -211,6 +212,16 @@ pub fn editor_page(props: &EditorProps) -> Html {
         Callback::from(move |_: ()| share_open.set(false))
     };
 
+    // Reads the editor as it is now; saving is neither triggered nor awaited.
+    let download = {
+        let (quill, title) = (quill.clone(), title.clone());
+        Callback::from(move |_| {
+            let Some(delta) = quill.borrow().as_ref().map(editor_js::get_contents) else { return };
+            let Ok(delta) = serde_json::from_str(&delta) else { return };
+            download_js::download_text(&export_file_name(&title), &delta_to_markdown(&delta));
+        })
+    };
+
     html! {
         <main class="page editor-page">
             <div class="editor-header">
@@ -219,6 +230,7 @@ pub fn editor_page(props: &EditorProps) -> Html {
                     if let Some(d) = &*doc {
                         <span class="ownership">{ owner_label(d.is_owner, &d.owner.name) }</span>
                         <button onclick={toggle_share} aria-expanded={share_open.to_string()}>{ "Share" }</button>
+                        <button onclick={download}>{ "Download .md" }</button>
                     }
                     <span class="status" aria-live="polite">{ (*label).clone() }</span>
                 </div>
