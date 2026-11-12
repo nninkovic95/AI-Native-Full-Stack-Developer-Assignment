@@ -15,13 +15,14 @@
 | `bob@ajaia.test` | `ajaia-demo` |
 | `carol@ajaia.test` | `ajaia-demo` |
 
-Suggested review path (about three minutes):
+Suggested review path (about four minutes):
 
 1. Sign in as Alice. Create a document, type, apply bold, a heading and a list. Rename it and press Enter. Wait for "Saved" at the top right, then refresh: everything is still there.
 2. On the document list, click "Import file" and choose `samples/sample.md` from this repository. It opens as a formatted document. To see a rejection, switch the file picker's filter to "All files" and choose a `.docx` or `.pdf`: it is refused with "Only .txt and .md files can be imported".
 3. Open a document, click "Share", enter `bob@ajaia.test`. Copy the document's URL.
 4. In a private window, sign in as Bob. The document is under "Shared with me", marked "Shared by Alice". Bob can edit it; Bob's Share panel says only the owner can share.
 5. Sign out and sign in as Carol. The document is not listed. Paste the URL copied in step 3: it says "Document not found".
+6. Back as Alice: in the Share panel, click "Remove" next to Bob; the document disappears from Bob's list. Click "Download .md" to export the document. On the document list, "Delete" asks in a dialog before removing a document. The sun and moon button in the bottom-right corner switches between light and dark.
 
 ## What is included
 
@@ -46,9 +47,13 @@ Suggested review path (about three minutes):
 | 4. Persistence | Working | Postgres; formatting, sessions and shares survive refreshes and redeploys |
 | 5. Engineering quality | Working | Live deploy, validation with readable errors, automated tests, architecture note |
 
-Optional stretch from the brief: **export to Markdown** ("Download .md" in the editor).
+Also shipped and checked on the live site:
 
-Also included, beyond the brief: revoking access, and a dark theme with a toggle.
+- **Export to Markdown** ("Download .md" in the editor), one of the brief's optional stretch items.
+- **Deleting documents** (owner only, confirmed in an in-page dialog).
+- **Revoking access** ("Remove" in the Share panel, owner only).
+- **Dark mode** with a sun and moon toggle; the app follows the system setting by default.
+- **A sticky editor toolbar** that stays in view while scrolling a long document.
 
 Automated tests: 147 in total. 95 on the server (68 send real HTTP requests through the router to a real Postgres: sign-in 5, documents 8, delete 6, import upload 9, sharing 13, revoking access 7, validation 20; 27 cover the import converter) and 52 unit tests for the web client's logic, 17 of them for the Markdown export.
 
@@ -64,8 +69,7 @@ Automated tests: 147 in total. 95 on the server (68 send real HTTP requests thro
 
 ## With another 2 to 4 hours
 
-1. **Version history** (about an hour): a snapshot on save at most every few minutes, a history panel in the editor, and restore. It was considered near the end and left out because it could not be built and checked safely in the time left.
-2. **A version check on save** so a stale tab cannot silently overwrite newer edits; show "this document changed elsewhere" instead (about an hour). It is the honest first step towards collaboration.
-3. **View-only sharing**: a role on the share, enforced in the one access check, and a read-only editor (about an hour).
-4. **Browser-driven smoke test** of the main flow against a local server, run in CI (about an hour).
-5. Smaller items: save on tab close and retry failed saves on a timer, keep links and tables on import, local time in the document list, hashing session tokens at rest, bundling the editor library instead of loading it from a CDN.
+1. **Polish the theming**, both light and dark.
+2. **Markdown on the fly:** type Markdown in the editor and see it rendered live.
+3. **Version history:** saved snapshots per document that you can restore.
+4. **Real-time collaboration** last, since it is the hardest part: presence plus merging concurrent edits.

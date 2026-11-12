@@ -9,7 +9,9 @@ The brief asks for a coherent product slice under a tight timebox, with access l
 3. **Access rules on the server.** Who may open, edit and share a document is decided on the server and tested through the HTTP API. The UI only reflects it.
 4. **A file import that is useful rather than broad.** Two formats done properly, with clear rejections for everything else.
 
-Depth went into the access rules, the import conversion and the tests. Breadth (roles, real-time editing, export, more file types) was cut on purpose.
+Depth went into the access rules, the import conversion and the tests. Breadth (roles, real-time editing, version history, more file types) was cut on purpose.
+
+Once the core was deployed and checked, four small features were added, each in its own commit so it could be reverted alone: deleting documents, revoking access, export to Markdown ("Download .md"), and a dark mode with a sun and moon toggle and a sticky editor toolbar. All are shipped and were checked on the live site.
 
 ## Shape of the system
 

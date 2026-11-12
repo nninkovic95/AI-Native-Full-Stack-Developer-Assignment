@@ -29,7 +29,8 @@ To see sharing: sign in as Alice, create a document, share it with `bob@ajaia.te
 - **Sharing:** the owner of a document grants access to another user by email. The document list separates "My documents" from "Shared with me" and shows each document's owner. A user a document is shared with can open, edit and rename it; only the owner can share it, remove people again ("Remove" in the Share panel) or delete it. Anyone else gets "Document not found".
 - **Export:** "Download .md" in the editor saves the document as a Markdown file. Headings, bold, italic and lists (including nested ones) are kept; underline has no Markdown form, so underlined text is exported as plain text.
 - **Persistence:** documents, formatting, sessions and shares are stored in Postgres.
-- **Light and dark themes:** the app follows the system setting; the button in the bottom-right corner switches theme and remembers the choice.
+- **Light and dark themes:** the app follows the system setting; the sun and moon button in the bottom-right corner switches theme and remembers the choice.
+- **Sticky toolbar:** the formatting toolbar stays in view while you scroll a long document.
 
 ## Stack
 
