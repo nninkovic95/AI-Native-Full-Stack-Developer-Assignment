@@ -20,6 +20,8 @@ sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio",
 argon2 = "0.5"
 pulldown-cmark = { version = "0.12", default-features = false }
 chrono = { workspace = true }
+# Already in the tree via the cookie crate; needed for the cookie Max-Age type.
+time = "0.3"
 serde = { workspace = true }
 serde_json = { workspace = true }
 uuid = { workspace = true }
