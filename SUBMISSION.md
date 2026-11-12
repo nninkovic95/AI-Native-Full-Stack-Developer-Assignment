@@ -5,7 +5,7 @@
 - **Live product:** https://ai-native-full-stack-developer-assignment-p9to.onrender.com
   (free tier: the first request after 15 idle minutes takes about a minute)
 - **Source:** https://github.com/nninkovic95/AI-Native-Full-Stack-Developer-Assignment
-- **Walkthrough video:** see [VIDEO_URL.txt](VIDEO_URL.txt)
+- **Walkthrough video:** see VIDEO_URL.txt
 
 ## Test accounts
 
@@ -29,13 +29,13 @@ Suggested review path (about four minutes):
 | Item | Where |
 | --- | --- |
 | Source code | this repository (`crates/`, `migrations/`, `scripts/`, `Dockerfile`) |
-| Setup, run, test and deploy instructions | [README.md](README.md) |
-| Architecture note | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| AI workflow note | [AI_WORKFLOW.md](AI_WORKFLOW.md) |
-| Process log (decisions, failed attempts, rejected AI output) | [PROCESS.md](PROCESS.md) |
-| Sample files for the import feature | [samples/](samples/) |
-| Walkthrough video URL | [VIDEO_URL.txt](VIDEO_URL.txt) |
-| The brief and the working rules given to the AI | [CLAUDE.md](CLAUDE.md) |
+| Setup, run, test and deploy instructions | README.md |
+| Architecture note | ARCHITECTURE.md |
+| AI workflow note | AI_WORKFLOW.md |
+| Process log (decisions, failed attempts, rejected AI output) | PROCESS.md |
+| Sample files for the import feature | samples/ |
+| Walkthrough video URL | VIDEO_URL.txt |
+| The brief and the working rules given to the AI | CLAUDE.md |
 
 ## What works
 

@@ -120,4 +120,4 @@ The server applies migrations and creates the demo accounts when it starts, so t
 - The editor library loads from a CDN, so the editor needs internet access.
 - Times in the document list are shown in UTC.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for what was prioritised and why, and [SUBMISSION.md](SUBMISSION.md) for the list of deliverables.
+See ARCHITECTURE.md for what was prioritised and why, and SUBMISSION.md for the list of deliverables.

@@ -18,10 +18,10 @@
 
 How that was set up:
 
-- A project instruction file ([CLAUDE.md](CLAUDE.md)) fixed the stack, the build order (one section of the brief at a time), and the working rules: plan first and wait for approval, gate every step with a check, stop and report instead of guessing, commit per section.
+- A project instruction file (CLAUDE.md) fixed the stack, the build order (one section of the brief at a time), and the working rules: plan first and wait for approval, gate every step with a check, stop and report instead of guessing, commit per section.
 - The AI wrote a time-boxed plan as a checklist; it was re-budgeted against the real deadline before any code was written.
 - Backend tests sit at two agreed boundaries: the HTTP API and the import converter.
-- A running log of decisions, failures and rejections was kept in [PROCESS.md](PROCESS.md).
+- A running log of decisions, failures and rejections was kept in PROCESS.md.
 
 ## Where AI materially sped up the work
 
@@ -55,7 +55,7 @@ Also changed or rejected during the build (detail in PROCESS.md):
 
 - Live gate check on the deployed URL after every section: login, edit, import, sharing alice -> bob, carol 404, revoke, delete, Download .md round trip.
 - Review agents found real bugs: pasted images breaking the editor, Ctrl+Z after open wiping the doc, a double click creating two docs. All fixed and checked live.
-- Automated: server tests through the real HTTP router and a real Postgres (sign-in, access rules, sharing, revoking access, delete, import, validation); unit tests for the web client's pure logic. Counts are in [SUBMISSION.md](SUBMISSION.md).
+- Automated: server tests through the real HTTP router and a real Postgres (sign-in, access rules, sharing, revoking access, delete, import, validation); unit tests for the web client's pure logic. Counts are in SUBMISSION.md.
 - The AI could not run the server, reach the live site or push to GitHub from its sandbox; every deploy and browser check was done by hand.
 
 ## What I'd do next
