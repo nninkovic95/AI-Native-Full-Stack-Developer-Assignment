@@ -74,3 +74,16 @@ pub async fn get_document(id: Uuid) -> ApiResult<Document> {
 pub async fn update_document(id: Uuid, body: &UpdateDocument) -> ApiResult<Document> {
     json(send(json_post("PATCH", &format!("/api/documents/{id}"), body)).await?).await
 }
+
+/// Uploads a `.txt` or `.md` file as multipart form data and returns the new document.
+/// No Content-Type is set so the browser adds the multipart boundary itself.
+pub async fn import_document(file: &web_sys::File) -> ApiResult<Document> {
+    let unreadable = || ApiFailure {
+        kind: FailureKind::Other,
+        status: 0,
+        message: "Could not read the selected file".to_string(),
+    };
+    let form = web_sys::FormData::new().map_err(|_| unreadable())?;
+    form.append_with_blob_and_filename("file", file, &file.name()).map_err(|_| unreadable())?;
+    json(send(Request::post("/api/documents/import").body(form)).await?).await
+}

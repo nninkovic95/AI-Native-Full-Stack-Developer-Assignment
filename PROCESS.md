@@ -43,5 +43,16 @@ A running log of key decisions, failed attempts, and changes or rejections durin
 - Integrator review: re-ran `cargo test -p web` and `trunk build` (both pass), read the editor page, the JS glue and the fetch wrappers. Accepted without changes.
 - Accepted limits, to be stated in the README: a hard refresh inside the 800 ms autosave window can drop the last keystrokes; "last edited" is shown in UTC; Quill comes from a CDN.
 - The subagent skipped the red step for one slice (`failure_from_response`) and said so; the test was kept.
-- Not yet verified in a browser: the AI sandbox cannot run the server, so the create/format/rename/refresh gate is run by hand.
+- The AI sandbox cannot run the server or reach the live URL, so the browser gate is run by hand. Passed on the live deploy: signed in as alice, created a document, applied bold, a heading and a list, renamed it, refreshed; title and formatting persisted. First time the Quill interop and the Secure cookie ran for real, and both worked unchanged.
 - A review workflow over the backend and the never-built Dockerfile was first launched with up to 9 agents, then stopped and capped at 5 (three reviewers, verifiers only for the most severe findings).
+- Review result (5 agents: three reviewers, two verifiers):
+  - Confirmed and fixed: Quill accepted pasted or dropped images as base64 even though the toolbar has no image button; a document over axum's 2 MB default body limit would then fail every autosave. Fix chosen: a `formats` allowlist in the Quill glue (one line), which also drops `<img>` from pasted HTML. Rejected the larger fix (raising the body limit and supporting images): images are out of scope.
+  - Rejected by the verifier: "the unpinned Trunk binary may not run on bookworm". The same Dockerfile had already built and deployed.
+  - Not applicable: a warning about SQLx's migration lock behind Neon's pooled URL; the deploy uses the direct connection.
+  - Deferred to the validation pass (section 5): unknown `/api/*` paths fall through to the SPA and answer 200 with HTML, and axum's own rejections (malformed JSON, oversized body, bad UUID) are plain text instead of the `{error}` JSON shape.
+  - The auth, session and access-control review found no defect.
+
+## Section 2: File import
+
+- The converter started in the main session (plain text, headings), then the rest of the section moved to a workflow capped at 5 agents: a backend agent working test-first; once its tests pass, a Sonnet UI agent and an independent read-only reviewer in parallel; a repair agent only if the reviewer finds a real defect or the UI does not build. The workflow stops after the backend step if its tests are not green, so no UI is built against an unfinished contract.
+- Markdown is converted to a Quill Delta on the server rather than to HTML: the stored format stays the same for typed and imported documents, and the conversion is a pure function that can be tested against hand-written expected Deltas.

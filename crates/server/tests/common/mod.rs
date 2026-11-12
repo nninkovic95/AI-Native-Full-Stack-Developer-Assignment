@@ -45,6 +45,37 @@ pub async fn send(app: &Router, method: Method, uri: &str, cookie: Option<&str>,
         None => req.body(Body::empty()),
     }
     .unwrap();
+    dispatch(app, req).await
+}
+
+pub const BOUNDARY: &str = "test-boundary-5c1e9a";
+
+/// One multipart part carrying a file, as a browser's file input would send it.
+pub fn file_part(field: &str, file_name: &str, content: &[u8]) -> Vec<u8> {
+    let mut part = format!(
+        "--{BOUNDARY}\r\nContent-Disposition: form-data; name=\"{field}\"; filename=\"{file_name}\"\r\nContent-Type: application/octet-stream\r\n\r\n"
+    )
+    .into_bytes();
+    part.extend_from_slice(content);
+    part.extend_from_slice(b"\r\n");
+    part
+}
+
+/// Posts the given parts as one multipart/form-data body.
+pub async fn send_multipart(app: &Router, uri: &str, cookie: Option<&str>, parts: &[Vec<u8>]) -> Resp {
+    let mut body = parts.concat();
+    body.extend_from_slice(format!("--{BOUNDARY}--\r\n").as_bytes());
+    let mut req = Request::builder()
+        .method(Method::POST)
+        .uri(uri)
+        .header(header::CONTENT_TYPE, format!("multipart/form-data; boundary={BOUNDARY}"));
+    if let Some(c) = cookie {
+        req = req.header(header::COOKIE, c);
+    }
+    dispatch(app, req.body(Body::from(body)).unwrap()).await
+}
+
+async fn dispatch(app: &Router, req: Request<Body>) -> Resp {
     let res = app.clone().oneshot(req).await.unwrap();
     let status = res.status();
     let headers = res.headers().clone();

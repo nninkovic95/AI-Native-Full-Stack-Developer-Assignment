@@ -8,6 +8,10 @@ use uuid::Uuid;
 
 pub const MAX_TITLE_LEN: usize = 200;
 pub const DEFAULT_TITLE: &str = "Untitled document";
+/// File types `POST /api/documents/import` accepts, matched without regard to letter case.
+pub const IMPORT_EXTENSIONS: [&str; 2] = ["txt", "md"];
+/// Largest file `POST /api/documents/import` accepts.
+pub const MAX_IMPORT_BYTES: usize = 1024 * 1024;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Health {

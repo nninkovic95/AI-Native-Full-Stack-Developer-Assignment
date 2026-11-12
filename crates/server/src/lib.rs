@@ -5,11 +5,12 @@ pub mod import;
 pub mod seed;
 
 use axum::{
+    extract::DefaultBodyLimit,
     routing::{get, post},
     Json, Router,
 };
 pub use error::AppError;
-use shared::Health;
+use shared::{Health, MAX_IMPORT_BYTES};
 use sqlx::PgPool;
 use tower_http::services::{ServeDir, ServeFile};
 
@@ -35,6 +36,11 @@ fn api(state: AppState) -> Router {
         .route("/logout", post(auth::logout))
         .route("/me", get(auth::me))
         .route("/documents", get(docs::list).post(docs::create))
+        .route(
+            "/documents/import",
+            // Room for the multipart framing around a file of the largest accepted size.
+            post(import::upload).layer(DefaultBodyLimit::max(MAX_IMPORT_BYTES + 64 * 1024)),
+        )
         .route("/documents/{id}", get(docs::get_one).patch(docs::update))
         .with_state(state)
 }

@@ -63,16 +63,21 @@ pub async fn create(
     Json(req): Json<CreateDocument>,
 ) -> AppResult<(StatusCode, Json<Document>)> {
     let title = req.title.unwrap_or_else(|| DEFAULT_TITLE.to_owned());
+    let doc = insert(&state.pool, &user, &title, json!({ "ops": [] })).await?;
+    Ok((StatusCode::CREATED, Json(doc)))
+}
+
+/// Stores a new document owned by `owner` and returns it as the owner sees it.
+pub(crate) async fn insert(pool: &PgPool, owner: &User, title: &str, content: Value) -> AppResult<Document> {
     let id = Uuid::new_v4();
     sqlx::query("INSERT INTO documents (id, owner_id, title, content) VALUES ($1, $2, $3, $4)")
         .bind(id)
-        .bind(user.id)
-        .bind(&title)
-        .bind(json!({ "ops": [] }))
-        .execute(&state.pool)
+        .bind(owner.id)
+        .bind(title)
+        .bind(content)
+        .execute(pool)
         .await?;
-    let doc = load_accessible(&state.pool, &user, id).await?;
-    Ok((StatusCode::CREATED, Json(doc)))
+    load_accessible(pool, owner, id).await
 }
 
 pub async fn get_one(

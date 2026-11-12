@@ -46,6 +46,9 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
 .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .userbox { display: flex; gap: 12px; align-items: center; }
 .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.toolbar-actions { display: flex; gap: 8px; }
+.toolbar-hint { text-align: right; margin-bottom: 12px; }
+.visually-hidden { display: none; }
 .doclist {
   width: 100%;
   border-collapse: collapse;

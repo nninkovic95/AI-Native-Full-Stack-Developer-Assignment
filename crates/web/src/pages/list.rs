@@ -1,10 +1,13 @@
 use shared::{DocumentSummary, User};
+use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
 use crate::{
     api::{self, FailureKind},
+    logic::validate::{import_accept, import_hint, validate_import},
     Route,
 };
 
@@ -14,6 +17,8 @@ pub fn list_page() -> Html {
     let user = use_state(|| None::<User>);
     let docs = use_state(|| None::<Vec<DocumentSummary>>);
     let error = use_state(|| None::<String>);
+    let importing = use_state(|| false);
+    let file_input = use_node_ref();
 
     {
         let (user, docs, error, navigator) = (user.clone(), docs.clone(), error.clone(), navigator.clone());
@@ -38,6 +43,46 @@ pub fn list_page() -> Html {
             let (error, navigator) = (error.clone(), navigator.clone());
             spawn_local(async move {
                 match api::create_document().await {
+                    Ok(doc) => navigator.push(&Route::Editor { id: doc.id }),
+                    Err(f) if f.kind == FailureKind::Unauthorized => navigator.push(&Route::Login),
+                    Err(f) => error.set(Some(f.message)),
+                }
+            });
+        })
+    };
+
+    let on_import_click = {
+        let file_input = file_input.clone();
+        Callback::from(move |_| {
+            if let Some(input) = file_input.cast::<HtmlInputElement>() {
+                input.click();
+            }
+        })
+    };
+
+    let on_file_chosen = {
+        let (error, importing, navigator) = (error.clone(), importing.clone(), navigator.clone());
+        Callback::from(move |e: Event| {
+            let Some(input) = e.target().and_then(|t| t.dyn_into::<HtmlInputElement>().ok()) else {
+                return;
+            };
+            let file = input.files().and_then(|files| files.get(0));
+            // Clear the value so picking the same file again still fires a change event.
+            input.set_value("");
+            let Some(file) = file else {
+                return;
+            };
+            if let Err(msg) = validate_import(&file.name(), file.size() as u64) {
+                error.set(Some(msg));
+                return;
+            }
+            error.set(None);
+            importing.set(true);
+            let (error, importing, navigator) = (error.clone(), importing.clone(), navigator.clone());
+            spawn_local(async move {
+                let result = api::import_document(&file).await;
+                importing.set(false);
+                match result {
                     Ok(doc) => navigator.push(&Route::Editor { id: doc.id }),
                     Err(f) if f.kind == FailureKind::Unauthorized => navigator.push(&Route::Login),
                     Err(f) => error.set(Some(f.message)),
@@ -71,8 +116,21 @@ pub fn list_page() -> Html {
             </header>
             <div class="toolbar">
                 <h2>{ "Documents" }</h2>
-                <button class="primary" onclick={on_new}>{ "New document" }</button>
+                <div class="toolbar-actions">
+                    <button onclick={on_import_click} disabled={*importing}>
+                        { if *importing { "Importing…" } else { "Import file" } }
+                    </button>
+                    <button class="primary" onclick={on_new}>{ "New document" }</button>
+                </div>
+                <input
+                    ref={file_input}
+                    type="file"
+                    class="visually-hidden"
+                    accept={import_accept()}
+                    onchange={on_file_chosen}
+                />
             </div>
+            <p class="hint toolbar-hint">{ import_hint() }</p>
             if let Some(msg) = &*error {
                 <p class="error" role="alert">{ msg }</p>
             }

@@ -5,6 +5,8 @@ use axum::{
 };
 use shared::ApiError;
 
+use crate::import::ImportError;
+
 #[derive(Debug)]
 pub enum AppError {
     BadRequest(String),
@@ -45,5 +47,18 @@ impl IntoResponse for AppError {
 impl From<sqlx::Error> for AppError {
     fn from(e: sqlx::Error) -> Self {
         AppError::Internal(e.to_string())
+    }
+}
+
+impl From<ImportError> for AppError {
+    fn from(e: ImportError) -> Self {
+        match e {
+            ImportError::UnsupportedType => {
+                AppError::BadRequest("Only .txt and .md files can be imported".into())
+            }
+            ImportError::TooLarge => AppError::PayloadTooLarge("The file is larger than 1 MB".into()),
+            ImportError::NotUtf8 => AppError::BadRequest("The file is not valid UTF-8 text".into()),
+            ImportError::Empty => AppError::BadRequest("The file is empty".into()),
+        }
     }
 }
