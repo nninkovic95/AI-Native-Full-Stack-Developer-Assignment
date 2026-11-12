@@ -1,0 +1,7 @@
+[build]
+target = "index.html"
+dist = "../../dist"
+
+# `trunk serve` forwards API calls to a locally running server (cargo run).
+[[proxy]]
+backend = "http://localhost:3000/api"

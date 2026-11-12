@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = ["crates/shared", "crates/server", "crates/web"]
+# The web crate only targets wasm32; plain `cargo build`/`cargo test` at the root stays native.
+default-members = ["crates/shared", "crates/server"]
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["serde", "v4", "js"] }
+chrono = { version = "0.4", default-features = false, features = ["serde", "clock", "std"] }
