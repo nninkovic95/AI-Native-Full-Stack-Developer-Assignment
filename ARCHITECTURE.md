@@ -31,7 +31,7 @@ A `shared` crate holds the request and response types. The server and the web cl
 
 **Document content is stored as a Quill Delta (JSON), not HTML.** A Delta is the editor's own lossless format, so what is saved is exactly what is shown again. It is also data rather than markup: the server checks its shape, and there is no stored HTML to sanitise before showing it to another user.
 
-**One access rule.** A single query, `load_accessible`, answers "may this user open this document": they own it, or there is a share row for them. Every route that takes a document ID goes through it. The document list applies the same owner-or-share condition in its own query. Sharing adds one more rule on top: only the owner may share.
+**One access rule.** A single query, `load_accessible`, answers "may this user open this document": they own it, or there is a share row for them. Every route that takes a document ID goes through it. The document list applies the same owner-or-share condition in its own query. Sharing and deleting add one more rule on top: only the owner may do either.
 
 **No access looks like not found.** A user without access gets 404, the same answer as for an ID that does not exist, so document IDs cannot be probed. A shared user who tries to share gets 403, because they already know the document exists.
 
@@ -53,7 +53,6 @@ A `shared` crate holds the request and response types. The server and the web cl
 | --- | --- | --- |
 | Real-time collaboration, conflict handling | The largest feature in the space; a half-built version is worse than an honest "last save wins" | A CRDT or OT layer and WebSockets; a version check on save would be the cheap first step |
 | View-only and comment roles, revoking access | The brief asks for a simple sharing model; one clear rule beats three half-tested ones | A `role` column on the share row and a delete route |
-| Deleting documents | Not on the core path for a review | One route, one confirmation dialog |
 | `.docx` import | Needs a real parser to be done properly | A conversion library on the server, feeding the same Delta builder |
 | Links and tables on import | The editor's toolbar offers neither, so they would be content a user cannot edit | Enable the link format in the editor; convert tables to plain rows |
 | Images in documents | They would be stored inline and grow documents past sensible request sizes | Object storage and an upload route |

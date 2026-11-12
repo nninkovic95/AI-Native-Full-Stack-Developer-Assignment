@@ -40,7 +40,7 @@ Suggested review path (about three minutes):
 
 | Brief section | Status | Notes |
 | --- | --- | --- |
-| 1. Create, rename, edit, save, reopen | Working | Bold, italic, underline, two heading levels, bulleted and numbered lists; autosave with a visible status |
+| 1. Create, rename, edit, save, reopen | Working | Bold, italic, underline, two heading levels, bulleted and numbered lists; autosave with a visible status; owners can delete their documents |
 | 2. File upload | Working | `.txt` and `.md` (UTF-8, up to 1 MB) become new documents; supported types are stated in the UI and the README |
 | 3. Sharing | Working | Owner shares by email; "My documents" and "Shared with me" are separate; shared users can edit but not share; others get "Document not found" |
 | 4. Persistence | Working | Postgres; formatting, sessions and shares survive refreshes and redeploys |
@@ -48,12 +48,12 @@ Suggested review path (about three minutes):
 
 Also included, beyond the brief: a dark theme with a toggle.
 
-Automated tests: 112 in total. 82 on the server (55 send real HTTP requests through the router to a real Postgres: sign-in 5, documents 8, import upload 9, sharing 13, validation 20; 27 cover the import converter) and 30 unit tests for the web client's logic.
+Automated tests: 121 in total. 88 on the server (61 send real HTTP requests through the router to a real Postgres: sign-in 5, documents 8, delete 6, import upload 9, sharing 13, validation 20; 27 cover the import converter) and 33 unit tests for the web client's logic.
 
 ## What is incomplete or intentionally left out
 
 - No real-time collaboration; simultaneous edits to one document overwrite each other (last save wins).
-- Access cannot be revoked and documents cannot be deleted from the UI.
+- Access cannot be revoked once granted (the owner can delete the document).
 - One sharing level only (edit); no view-only or comment roles.
 - No images in documents; no `.docx` import; imported links lose their address and Markdown tables are not converted.
 - No sign-up or password reset; accounts are seeded.
@@ -63,7 +63,7 @@ Automated tests: 112 in total. 82 on the server (55 send real HTTP requests thro
 
 ## With another 2 to 4 hours
 
-1. **Revoke access and delete documents**, with tests for both (about 45 minutes). They complete the sharing story.
+1. **Revoke access**, with tests (about 30 minutes). It completes the sharing story.
 2. **A version check on save** so a stale tab cannot silently overwrite newer edits; show "this document changed elsewhere" instead (about an hour). It is the honest first step towards collaboration.
 3. **View-only sharing**: a role on the share, enforced in the one access check, and a read-only editor (about an hour).
 4. **Browser-driven smoke test** of the main flow against a local server, run in CI (about an hour).

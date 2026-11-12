@@ -18,7 +18,8 @@ To see sharing: sign in as Alice, create a document, share it with `bob@ajaia.te
 
 ## What it does
 
-- **Documents:** create, rename, edit and reopen. Formatting: bold, italic, underline, two heading levels, bulleted and numbered lists.
+- **Documents:** create, rename, edit, reopen and delete. Formatting: bold, italic, underline, two heading levels, bulleted and numbered lists.
+  - Only the owner can delete a document; "Delete" is on each row under "My documents" and asks for confirmation.
   - The text saves automatically about a second after you stop typing. A status at the top right of the page shows "Unsaved changes", "Saving…", "Saved" or "Save failed: …".
   - The title saves when you press Enter or click outside it.
 - **File import:** "Import file" on the document list turns a file into a new, editable document.
@@ -79,7 +80,7 @@ For frontend work with live reload, keep the server running with the command abo
 ## Tests
 
 ```sh
-# Server: 55 tests send real HTTP requests through the router to a real Postgres;
+# Server: 61 tests send real HTTP requests through the router to a real Postgres;
 # 27 more test the import converter directly.
 scripts/with-test-db.sh cargo test -p server
 
@@ -111,7 +112,6 @@ The server applies migrations and creates the demo accounts when it starts, so t
 - **Browser Back on the sign-in page** returns to the sign-in page when signed out.
 - **Images are not supported.** Pasted or dropped images are ignored.
 - **Sharing is all-or-nothing:** a shared user can edit; there are no view-only or comment roles, and access cannot be revoked in the UI.
-- **Documents cannot be deleted** in the UI.
 - **Accounts are seeded.** There is no sign-up or password reset.
 - **Import** covers `.txt` and `.md`; `.docx` is not supported. Imported links lose their address and Markdown tables are not converted.
 - The editor library loads from a CDN, so the editor needs internet access.
