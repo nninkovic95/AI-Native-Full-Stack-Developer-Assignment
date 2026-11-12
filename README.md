@@ -18,11 +18,14 @@ To see sharing: sign in as Alice, create a document, share it with `bob@ajaia.te
 
 ## What it does
 
-- **Documents:** create, rename, edit and reopen. Formatting: bold, italic, underline, two heading levels, bulleted and numbered lists. Edits save automatically about a second after you stop typing; a status next to the title shows "Saving…", "Saved" or the error.
+- **Documents:** create, rename, edit and reopen. Formatting: bold, italic, underline, two heading levels, bulleted and numbered lists.
+  - The text saves automatically about a second after you stop typing. A status at the top right of the page shows "Unsaved changes", "Saving…", "Saved" or "Save failed: …".
+  - The title saves when you press Enter or click outside it.
 - **File import:** "Import file" on the document list turns a file into a new, editable document.
   - Supported types: **`.txt` and `.md` only**, UTF-8, up to **1 MB**.
-  - Markdown headings, bold, italic, bulleted and numbered lists (including nested ones) keep their formatting. Other Markdown (links, code, quotes, tables) is imported as plain text.
-- **Sharing:** the owner of a document grants access to another user by email. The document list separates "My documents" from "Shared with me" and shows each document's owner. A user a document is shared with can open, edit and rename it; only the owner can share it. Anyone else gets "not found".
+  - Markdown headings, bold, italic, bulleted and numbered lists (including nested ones) keep their formatting.
+  - Other Markdown is reduced to its text: a link keeps its text but loses its address, code and quotes become plain lines, and a table comes through as one line of raw text.
+- **Sharing:** the owner of a document grants access to another user by email. The document list separates "My documents" from "Shared with me" and shows each document's owner. A user a document is shared with can open, edit and rename it; only the owner can share it. Anyone else gets "Document not found".
 - **Persistence:** documents, formatting, sessions and shares are stored in Postgres.
 - **Light and dark themes:** the app follows the system setting; the button in the bottom-right corner switches theme and remembers the choice.
 
@@ -41,6 +44,7 @@ crates/shared   request and response types used by both the server and the web c
 crates/server   Axum API, sessions, access checks, file import, migrations runner
 crates/web      Yew pages, Quill glue, pure logic modules with unit tests
 migrations      SQL schema
+samples         files to try the import with
 scripts         test helper
 ```
 
@@ -70,19 +74,21 @@ Open http://localhost:3000 and sign in with a demo account. The server creates t
 | `DIST_DIR` | `dist` | Folder with the built frontend |
 | `COOKIE_SECURE` | unset | Set to `true` behind HTTPS so the session cookie is marked `Secure` |
 
-For frontend work with live reload, run `trunk serve` in `crates/web` next to `cargo run -p server`; Trunk forwards `/api` to port 3000.
+For frontend work with live reload, keep the server running with the command above, run `trunk serve` in `crates/web` and open http://localhost:8080. Trunk forwards `/api` to port 3000.
 
 ## Tests
 
 ```sh
-# Server: every test drives the real HTTP router against a real Postgres.
+# Server: 55 tests send real HTTP requests through the router to a real Postgres;
+# 27 more test the import converter directly.
 scripts/with-test-db.sh cargo test -p server
 
-# Web client: pure logic (autosave state machine, validation, request shapes).
+# Web client: pure logic (autosave state machine, validation, request shapes,
+# sharing rules, theme choice).
 cargo test -p web
 ```
 
-`scripts/with-test-db.sh` starts a throwaway Postgres for the run and stops it afterwards. It needs the Postgres server programs (`initdb`, `pg_ctl`) on the `PATH` but no running service. Without them, point the tests at any Postgres whose user may create databases: `DATABASE_URL=postgres://ajaia:ajaia@localhost:5432/ajaia cargo test -p server`. Each test gets its own fresh database.
+`scripts/with-test-db.sh` starts a throwaway Postgres for the run and stops it afterwards. It needs the Postgres server programs (`initdb`, `pg_ctl`) on the `PATH` but no running service. Without them, point the tests at any Postgres whose user may create databases: `DATABASE_URL=postgres://ajaia:ajaia@localhost:5432/ajaia cargo test -p server`. Each database test gets its own fresh database.
 
 What the server tests cover: sign-in and the session cookie's flags, who can open and edit a document (owner, shared user, stranger), sharing rules, the document list, file import (conversion and rejections) and input validation.
 
@@ -100,13 +106,14 @@ The server applies migrations and creates the demo accounts when it starts, so t
 
 - **No real-time collaboration.** Two people editing the same document at once overwrite each other; the last save wins.
 - **Autosave window:** closing or reloading the tab within about a second of the last keystroke can lose that keystroke. Navigating inside the app saves first.
-- **Failed saves** are shown next to the title and retried on the next edit, not on a timer. Leaving the page while the status says "Save failed" loses the unsaved edits.
+- **Renaming:** a new title is saved on Enter or when the title field loses focus; reloading while still typing in it loses the new title.
+- **Failed saves** are shown in the status at the top right and retried on the next edit, not on a timer. Leaving the page while the status says "Save failed" loses the unsaved edits.
 - **Browser Back on the sign-in page** returns to the sign-in page when signed out.
 - **Images are not supported.** Pasted or dropped images are ignored.
 - **Sharing is all-or-nothing:** a shared user can edit; there are no view-only or comment roles, and access cannot be revoked in the UI.
 - **Documents cannot be deleted** in the UI.
 - **Accounts are seeded.** There is no sign-up or password reset.
-- **Import** covers `.txt` and `.md`; `.docx` is not supported.
+- **Import** covers `.txt` and `.md`; `.docx` is not supported. Imported links lose their address and Markdown tables are not converted.
 - The editor library loads from a CDN, so the editor needs internet access.
 - Times in the document list are shown in UTC.
 

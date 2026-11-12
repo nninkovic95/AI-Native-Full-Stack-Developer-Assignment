@@ -16,4 +16,4 @@ A short plan to try the **import** feature. This paragraph has *italic* and **bo
 - Notebook
 - Questions for the team
 
-Links such as [the brief](https://example.com) and `inline code` come through as plain text.
+A link such as [the brief](https://example.com) keeps its text but loses its address, and `inline code` becomes plain text.
