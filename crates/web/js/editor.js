@@ -3,6 +3,9 @@
 export function createEditor(container, onChange) {
   const quill = new Quill(container, {
     theme: "snow",
+    // Without an allowlist Quill embeds pasted or dropped images as base64, which
+    // outgrows the server's request size limit and makes every later save fail.
+    formats: ["header", "bold", "italic", "underline", "list", "indent"],
     modules: {
       toolbar: [
         [{ header: [1, 2, false] }],
