@@ -41,7 +41,7 @@ TODO: which of these mattered most to you, and roughly how much time they saved.
 
 Facts to choose from:
 
-- The first plan did not fit the deadline and included nothing for the video; it was re-budgeted and features were cut up front (delete, unshare, save-on-unload). Delete and a dark theme were added at the end, once the core was deployed, each by a small agent workflow in its own commit.
+- The first plan did not fit the deadline and included nothing for the video; it was re-budgeted and features were cut up front (delete, unshare, save-on-unload). Delete, revoking access, Markdown export and a dark theme were added at the end, once the core was deployed, each by a small agent workflow in its own commit. Version history was considered and declined: it could not be built and checked safely in the time left.
 - A password-less "user picker" login was proposed; email and password login was chosen instead.
 - The AI first launched a review with up to 9 agents; it was stopped and capped at 5.
 - An AI reviewer's finding about the Trunk binary was rejected by a second AI verifier with evidence (the same Dockerfile had already deployed).

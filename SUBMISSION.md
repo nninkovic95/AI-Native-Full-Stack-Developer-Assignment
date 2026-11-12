@@ -46,24 +46,25 @@ Suggested review path (about three minutes):
 | 4. Persistence | Working | Postgres; formatting, sessions and shares survive refreshes and redeploys |
 | 5. Engineering quality | Working | Live deploy, validation with readable errors, automated tests, architecture note |
 
-Also included, beyond the brief: a dark theme with a toggle.
+Optional stretch from the brief: **export to Markdown** ("Download .md" in the editor).
 
-Automated tests: 121 in total. 88 on the server (61 send real HTTP requests through the router to a real Postgres: sign-in 5, documents 8, delete 6, import upload 9, sharing 13, validation 20; 27 cover the import converter) and 33 unit tests for the web client's logic.
+Also included, beyond the brief: revoking access, and a dark theme with a toggle.
+
+Automated tests: 147 in total. 95 on the server (68 send real HTTP requests through the router to a real Postgres: sign-in 5, documents 8, delete 6, import upload 9, sharing 13, revoking access 7, validation 20; 27 cover the import converter) and 52 unit tests for the web client's logic, 17 of them for the Markdown export.
 
 ## What is incomplete or intentionally left out
 
 - No real-time collaboration; simultaneous edits to one document overwrite each other (last save wins).
-- Access cannot be revoked once granted (the owner can delete the document).
 - One sharing level only (edit); no view-only or comment roles.
 - No images in documents; no `.docx` import; imported links lose their address and Markdown tables are not converted.
 - No sign-up or password reset; accounts are seeded.
 - No browser-driven tests; pages were checked by hand on the live deploy.
 - Closing the tab within about a second of the last keystroke can lose that keystroke; a failed save is retried only on the next edit.
-- None of the brief's optional stretch items were attempted.
+- Of the brief's optional stretch items, only export to Markdown was built; no version history, comments or collaboration indicators.
 
 ## With another 2 to 4 hours
 
-1. **Revoke access**, with tests (about 30 minutes). It completes the sharing story.
+1. **Version history** (about an hour): a snapshot on save at most every few minutes, a history panel in the editor, and restore. It was considered near the end and left out because it could not be built and checked safely in the time left.
 2. **A version check on save** so a stale tab cannot silently overwrite newer edits; show "this document changed elsewhere" instead (about an hour). It is the honest first step towards collaboration.
 3. **View-only sharing**: a role on the share, enforced in the one access check, and a read-only editor (about an hour).
 4. **Browser-driven smoke test** of the main flow against a local server, run in CI (about an hour).

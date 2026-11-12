@@ -26,7 +26,8 @@ To see sharing: sign in as Alice, create a document, share it with `bob@ajaia.te
   - Supported types: **`.txt` and `.md` only**, UTF-8, up to **1 MB**.
   - Markdown headings, bold, italic, bulleted and numbered lists (including nested ones) keep their formatting.
   - Other Markdown is reduced to its text: a link keeps its text but loses its address, code and quotes become plain lines, and a table comes through as one line of raw text.
-- **Sharing:** the owner of a document grants access to another user by email. The document list separates "My documents" from "Shared with me" and shows each document's owner. A user a document is shared with can open, edit and rename it; only the owner can share it. Anyone else gets "Document not found".
+- **Sharing:** the owner of a document grants access to another user by email. The document list separates "My documents" from "Shared with me" and shows each document's owner. A user a document is shared with can open, edit and rename it; only the owner can share it, remove people again ("Remove" in the Share panel) or delete it. Anyone else gets "Document not found".
+- **Export:** "Download .md" in the editor saves the document as a Markdown file. Headings, bold, italic and lists (including nested ones) are kept; underline has no Markdown form, so underlined text is exported as plain text.
 - **Persistence:** documents, formatting, sessions and shares are stored in Postgres.
 - **Light and dark themes:** the app follows the system setting; the button in the bottom-right corner switches theme and remembers the choice.
 
@@ -80,12 +81,12 @@ For frontend work with live reload, keep the server running with the command abo
 ## Tests
 
 ```sh
-# Server: 61 tests send real HTTP requests through the router to a real Postgres;
+# Server: 68 tests send real HTTP requests through the router to a real Postgres;
 # 27 more test the import converter directly.
 scripts/with-test-db.sh cargo test -p server
 
 # Web client: pure logic (autosave state machine, validation, request shapes,
-# sharing rules, theme choice).
+# sharing rules, Markdown export, theme choice).
 cargo test -p web
 ```
 
@@ -111,7 +112,8 @@ The server applies migrations and creates the demo accounts when it starts, so t
 - **Failed saves** are shown in the status at the top right and retried on the next edit, not on a timer. Leaving the page while the status says "Save failed" loses the unsaved edits.
 - **Browser Back on the sign-in page** returns to the sign-in page when signed out.
 - **Images are not supported.** Pasted or dropped images are ignored.
-- **Sharing is all-or-nothing:** a shared user can edit; there are no view-only or comment roles, and access cannot be revoked in the UI.
+- **Sharing is all-or-nothing:** a shared user can edit; there are no view-only or comment roles.
+- **No version history.** There is no way to see or restore an earlier state of a document.
 - **Accounts are seeded.** There is no sign-up or password reset.
 - **Import** covers `.txt` and `.md`; `.docx` is not supported. Imported links lose their address and Markdown tables are not converted.
 - The editor library loads from a CDN, so the editor needs internet access.
