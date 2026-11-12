@@ -22,6 +22,8 @@ A running log of key decisions, failed attempts, and changes or rejections durin
 - Cargo workspace: `shared` (API types for both sides), `server` (Axum), `web` (Yew). `default-members` excludes `web` so root `cargo build`/`cargo test` stays native.
 - Axum serves the Trunk `dist/` with an `index.html` fallback so client-side routes survive a refresh.
 - Dockerfile installs Trunk from its prebuilt release binary rather than `cargo install`, to keep Render's build time down.
+- First deploy worked on the first try: the Docker build took 2m50s on Render's free builder, well under the 5–15 min the plan feared. The Dockerfile was never built locally.
+- Neon is used through its direct (non-pooled) connection string, which avoids PgBouncer's limits on prepared statements for SQLx and the boot-time migrations.
 - The AI sandbox cannot reach crates.io, GitHub (push) or the Docker socket: dependencies for every section were declared up front so one `cargo fetch` by the user covered them; pushes are done by the user.
 
 ## Section 1: Editing (backend)

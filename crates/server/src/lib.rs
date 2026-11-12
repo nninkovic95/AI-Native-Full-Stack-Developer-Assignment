@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod docs;
 pub mod error;
+pub mod import;
 pub mod seed;
 
 use axum::{
