@@ -75,7 +75,7 @@ pub async fn send_multipart(app: &Router, uri: &str, cookie: Option<&str>, parts
     dispatch(app, req.body(Body::from(body)).unwrap()).await
 }
 
-async fn dispatch(app: &Router, req: Request<Body>) -> Resp {
+pub async fn dispatch(app: &Router, req: Request<Body>) -> Resp {
     let res = app.clone().oneshot(req).await.unwrap();
     let status = res.status();
     let headers = res.headers().clone();

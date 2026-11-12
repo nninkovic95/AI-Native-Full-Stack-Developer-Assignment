@@ -1,15 +1,19 @@
 use axum::{
-    extract::{Path, State},
-    http::StatusCode,
+    extract::{FromRequestParts, Path, State},
+    http::{request::Parts, StatusCode},
     Json,
 };
 use chrono::{DateTime, Utc};
 use serde_json::{json, Value};
-use shared::{CreateDocument, Document, DocumentSummary, UpdateDocument, User, DEFAULT_TITLE};
+use shared::{CreateDocument, Document, DocumentSummary, UpdateDocument, User, DEFAULT_TITLE, MAX_TITLE_LEN};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::{auth::CurrentUser, error::AppResult, AppError, AppState};
+use crate::{
+    auth::CurrentUser,
+    error::{ApiJson, AppResult},
+    AppError, AppState,
+};
 
 #[derive(sqlx::FromRow)]
 struct DocRow {
@@ -41,7 +45,7 @@ impl DocRow {
 
 /// The only place that decides who may open a document: its owner, or a user it was shared with.
 /// Anyone else gets `NotFound`, the same as for an ID that does not exist.
-async fn load_accessible(pool: &PgPool, user: &User, id: Uuid) -> AppResult<Document> {
+pub(crate) async fn load_accessible(pool: &PgPool, user: &User, id: Uuid) -> AppResult<Document> {
     let row: Option<DocRow> = sqlx::query_as(
         "SELECT d.id, d.title, d.content, d.updated_at,
                 u.id AS owner_id, u.email AS owner_email, u.name AS owner_name
@@ -57,13 +61,50 @@ async fn load_accessible(pool: &PgPool, user: &User, id: Uuid) -> AppResult<Docu
     row.map(|r| r.into_document(user)).ok_or(AppError::NotFound)
 }
 
+/// The `{id}` path segment. One that is not a UUID names no document, so it is `NotFound` like any unknown ID.
+pub struct DocId(pub Uuid);
+
+impl<S: Send + Sync> FromRequestParts<S> for DocId {
+    type Rejection = AppError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, AppError> {
+        match Path::<Uuid>::from_request_parts(parts, state).await {
+            Ok(Path(id)) => Ok(DocId(id)),
+            Err(_) => Err(AppError::NotFound),
+        }
+    }
+}
+
+/// The form a title is stored in: surrounding whitespace removed, never blank.
+fn clean_title(title: &str) -> AppResult<&str> {
+    let title = title.trim();
+    if title.is_empty() {
+        return Err(AppError::BadRequest("Title cannot be empty".into()));
+    }
+    if title.chars().count() > MAX_TITLE_LEN {
+        return Err(AppError::BadRequest(format!(
+            "Title is too long ({MAX_TITLE_LEN} characters at most)"
+        )));
+    }
+    Ok(title)
+}
+
+/// Whether `content` has the shape of a Quill Delta, the only form the editor can reopen.
+fn is_delta(content: &Value) -> bool {
+    content
+        .get("ops")
+        .and_then(Value::as_array)
+        .is_some_and(|ops| ops.iter().all(|op| op.get("insert").is_some()))
+}
+
 pub async fn create(
     State(state): State<AppState>,
     CurrentUser(user): CurrentUser,
-    Json(req): Json<CreateDocument>,
+    ApiJson(req): ApiJson<CreateDocument>,
 ) -> AppResult<(StatusCode, Json<Document>)> {
     let title = req.title.unwrap_or_else(|| DEFAULT_TITLE.to_owned());
-    let doc = insert(&state.pool, &user, &title, json!({ "ops": [] })).await?;
+    let title = clean_title(&title)?;
+    let doc = insert(&state.pool, &user, title, json!({ "ops": [] })).await?;
     Ok((StatusCode::CREATED, Json(doc)))
 }
 
@@ -83,7 +124,7 @@ pub(crate) async fn insert(pool: &PgPool, owner: &User, title: &str, content: Va
 pub async fn get_one(
     State(state): State<AppState>,
     CurrentUser(user): CurrentUser,
-    Path(id): Path<Uuid>,
+    DocId(id): DocId,
 ) -> AppResult<Json<Document>> {
     Ok(Json(load_accessible(&state.pool, &user, id).await?))
 }
@@ -91,17 +132,21 @@ pub async fn get_one(
 pub async fn update(
     State(state): State<AppState>,
     CurrentUser(user): CurrentUser,
-    Path(id): Path<Uuid>,
-    Json(req): Json<UpdateDocument>,
+    DocId(id): DocId,
+    ApiJson(req): ApiJson<UpdateDocument>,
 ) -> AppResult<Json<Document>> {
     load_accessible(&state.pool, &user, id).await?;
+    let title = req.title.as_deref().map(clean_title).transpose()?;
+    if req.content.as_ref().is_some_and(|c| !is_delta(c)) {
+        return Err(AppError::BadRequest("Content is not a valid document".into()));
+    }
     sqlx::query(
         "UPDATE documents
          SET title = COALESCE($2, title), content = COALESCE($3, content), updated_at = now()
          WHERE id = $1",
     )
     .bind(id)
-    .bind(req.title)
+    .bind(title)
     .bind(req.content)
     .execute(&state.pool)
     .await?;
@@ -117,6 +162,7 @@ pub async fn list(
                 u.id AS owner_id, u.email AS owner_email, u.name AS owner_name
          FROM documents d JOIN users u ON u.id = d.owner_id
          WHERE d.owner_id = $1
+            OR EXISTS (SELECT 1 FROM document_shares s WHERE s.document_id = d.id AND s.user_id = $1)
          ORDER BY d.updated_at DESC",
     )
     .bind(user.id)

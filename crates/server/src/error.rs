@@ -1,8 +1,10 @@
 use axum::{
+    extract::{FromRequest, Request},
     http::StatusCode,
     response::{IntoResponse, Response},
     Json,
 };
+use serde::de::DeserializeOwned;
 use shared::ApiError;
 
 use crate::import::ImportError;
@@ -41,6 +43,27 @@ impl IntoResponse for AppError {
             }
         };
         (status, Json(ApiError { error: msg })).into_response()
+    }
+}
+
+/// `axum::Json` for request bodies, rejecting in the API's error shape instead of axum's plain text.
+pub struct ApiJson<T>(pub T);
+
+impl<S, T> FromRequest<S> for ApiJson<T>
+where
+    S: Send + Sync,
+    T: DeserializeOwned,
+{
+    type Rejection = AppError;
+
+    async fn from_request(req: Request, state: &S) -> Result<Self, AppError> {
+        match Json::<T>::from_request(req, state).await {
+            Ok(Json(value)) => Ok(ApiJson(value)),
+            Err(rejection) if rejection.status() == StatusCode::PAYLOAD_TOO_LARGE => {
+                Err(AppError::PayloadTooLarge("The document is too large".into()))
+            }
+            Err(_) => Err(AppError::BadRequest("Invalid request body".into())),
+        }
     }
 }
 

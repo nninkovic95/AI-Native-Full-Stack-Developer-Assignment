@@ -31,6 +31,12 @@ pub struct LoginRequest {
     pub password: String,
 }
 
+/// `POST /api/documents/{id}/shares`: the email of the user to give access to.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ShareRequest {
+    pub email: String,
+}
+
 /// Returned by `POST /api/login` and `GET /api/me`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct User {

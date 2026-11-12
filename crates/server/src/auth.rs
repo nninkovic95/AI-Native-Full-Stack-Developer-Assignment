@@ -9,7 +9,10 @@ use chrono::{Duration, Utc};
 use shared::{LoginRequest, User};
 use uuid::Uuid;
 
-use crate::{error::AppResult, AppError, AppState};
+use crate::{
+    error::{ApiJson, AppResult},
+    AppError, AppState,
+};
 
 pub const SESSION_COOKIE: &str = "session";
 const SESSION_DAYS: i64 = 7;
@@ -59,7 +62,7 @@ pub async fn me(CurrentUser(user): CurrentUser) -> Json<User> {
 pub async fn login(
     State(state): State<AppState>,
     jar: CookieJar,
-    Json(req): Json<LoginRequest>,
+    ApiJson(req): ApiJson<LoginRequest>,
 ) -> AppResult<(CookieJar, Json<User>)> {
     let row: Option<(Uuid, String, String, String)> =
         sqlx::query_as("SELECT id, email, name, password_hash FROM users WHERE email = $1")
