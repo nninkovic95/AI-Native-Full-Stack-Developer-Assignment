@@ -46,7 +46,7 @@ Suggested review path (about three minutes):
 | 4. Persistence | Working | Postgres; formatting, sessions and shares survive refreshes and redeploys |
 | 5. Engineering quality | Working | Live deploy, validation with readable errors, automated tests, architecture note |
 
-Automated tests: 107 in total. 82 on the server (55 send real HTTP requests through the router to a real Postgres: sign-in 5, documents 8, import upload 9, sharing 13, validation 20; 27 cover the import converter) and 25 unit tests for the web client's logic.
+Automated tests: 112 in total. 82 on the server (55 send real HTTP requests through the router to a real Postgres: sign-in 5, documents 8, import upload 9, sharing 13, validation 20; 27 cover the import converter) and 30 unit tests for the web client's logic.
 
 ## What is incomplete or intentionally left out
 

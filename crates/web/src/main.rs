@@ -2,6 +2,7 @@ mod api;
 mod editor_js;
 mod logic;
 mod pages;
+mod theme;
 
 use uuid::Uuid;
 use yew::prelude::*;
@@ -37,9 +38,12 @@ fn switch(route: Route) -> Html {
 #[function_component(App)]
 fn app() -> Html {
     html! {
-        <BrowserRouter>
-            <Switch<Route> render={switch} />
-        </BrowserRouter>
+        <>
+            <theme::ThemeToggle />
+            <BrowserRouter>
+                <Switch<Route> render={switch} />
+            </BrowserRouter>
+        </>
     }
 }
 

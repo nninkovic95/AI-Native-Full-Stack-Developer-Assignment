@@ -10,7 +10,7 @@ yew-router = "0.18"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
-web-sys = { version = "0.3", features = ["HtmlInputElement", "HtmlElement", "Element", "Event", "EventTarget", "File", "FileList", "FormData", "Window", "Location", "Storage"] }
+web-sys = { version = "0.3", features = ["HtmlInputElement", "HtmlElement", "Element", "Event", "EventTarget", "File", "FileList", "FormData", "Window", "Location", "Storage", "Document", "MediaQueryList"] }
 gloo-net = { version = "0.6", default-features = false, features = ["http", "json"] }
 gloo-timers = { version = "0.3", features = ["futures"] }
 serde = { workspace = true }

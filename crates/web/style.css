@@ -1,31 +1,125 @@
+/* Theme palette. Light values are the default; the dark values appear twice (system preference
+   without an explicit choice, and an explicit data-theme="dark") and must be kept identical. */
+:root {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --surface: #fff;
+  --surface-alt: #fafbfc;
+  --text: #1f2328;
+  --muted: #667085;
+  --border: #c4c9d0;
+  --border-soft: #e1e4e8;
+  --divider: #eef0f3;
+  --hover: #eef0f3;
+  --link: #1a5fb4;
+  --primary: #1a5fb4;
+  --primary-hover: #174f95;
+  --on-primary: #fff;
+  --error: #b42318;
+  --code-bg: #eef0f3;
+  --pill-text: #344054;
+  --badge-bg: #e8f0fb;
+  --badge-text: #1a5fb4;
+  --shadow: 0 1px 4px rgba(16, 24, 40, 0.15);
+  /* Quill snow defaults, exposed so the dark theme can swap them. */
+  --ql-border: #ccc;
+  --ql-stroke: #444;
+  --ql-accent: #06c;
+  --ql-placeholder: rgba(0, 0, 0, 0.6);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #12151a;
+    --surface: #1b1f26;
+    --surface-alt: #222730;
+    --text: #e6e8eb;
+    --muted: #9aa4b2;
+    --border: #3f4753;
+    --border-soft: #2c323b;
+    --divider: #2c323b;
+    --hover: #2a303a;
+    --link: #7ab0f5;
+    --primary: #2f6fc4;
+    --primary-hover: #2a62b0;
+    --on-primary: #fff;
+    --error: #ff8a80;
+    --code-bg: #2a303a;
+    --pill-text: #c9d1dc;
+    --badge-bg: #1f3350;
+    --badge-text: #9cc3f5;
+    --shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    --ql-border: #3f4753;
+    --ql-stroke: #c9d1dc;
+    --ql-accent: #6aa9ff;
+    --ql-placeholder: #8b95a3;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #12151a;
+  --surface: #1b1f26;
+  --surface-alt: #222730;
+  --text: #e6e8eb;
+  --muted: #9aa4b2;
+  --border: #3f4753;
+  --border-soft: #2c323b;
+  --divider: #2c323b;
+  --hover: #2a303a;
+  --link: #7ab0f5;
+  --primary: #2f6fc4;
+  --primary-hover: #2a62b0;
+  --on-primary: #fff;
+  --error: #ff8a80;
+  --code-bg: #2a303a;
+  --pill-text: #c9d1dc;
+  --badge-bg: #1f3350;
+  --badge-text: #9cc3f5;
+  --shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  --ql-border: #3f4753;
+  --ql-stroke: #c9d1dc;
+  --ql-accent: #6aa9ff;
+  --ql-placeholder: #8b95a3;
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: #1f2328;
-  background: #f6f7f9;
+  color: var(--text);
+  background: var(--bg);
 }
 .page { max-width: 960px; margin: 0 auto; padding: 24px; }
 
 /* Shared */
 h1, h2 { margin: 0; }
-a { color: #1a5fb4; }
+a { color: var(--link); }
 button {
   font: inherit;
   padding: 6px 14px;
-  border: 1px solid #c4c9d0;
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
 }
-button:hover:not(:disabled) { background: #eef0f3; }
+button:hover:not(:disabled) { background: var(--hover); }
 button:disabled { opacity: 0.6; cursor: default; }
-button.primary { background: #1a5fb4; border-color: #1a5fb4; color: #fff; }
-button.primary:hover:not(:disabled) { background: #174f95; }
-.error { color: #b42318; margin: 8px 0; }
-.muted { color: #667085; }
-.hint { font-size: 0.85rem; color: #667085; margin: 0; }
-code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
+button.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+button.primary:hover:not(:disabled) { background: var(--primary-hover); }
+.error { color: var(--error); margin: 8px 0; }
+.muted { color: var(--muted); }
+.hint { font-size: 0.85rem; color: var(--muted); margin: 0; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+
+/* Theme toggle: bottom corner so it never covers the page header buttons or the editor toolbar. */
+.theme-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  box-shadow: var(--shadow);
+}
 
 /* Login */
 .login { max-width: 420px; padding-top: 72px; }
@@ -35,12 +129,19 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
   flex-direction: column;
   gap: 12px;
   padding: 24px;
-  background: #fff;
-  border: 1px solid #e1e4e8;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
   border-radius: 10px;
 }
 .card label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
-.card input { font: inherit; padding: 8px 10px; border: 1px solid #c4c9d0; border-radius: 6px; }
+.card input {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
 
 /* Document list */
 .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
@@ -52,22 +153,22 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
 .doclist {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  border: 1px solid #e1e4e8;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
   border-radius: 8px;
 }
-.doclist th, .doclist td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #eef0f3; }
-.doclist th { font-size: 0.8rem; text-transform: uppercase; color: #667085; }
+.doclist th, .doclist td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--divider); }
+.doclist th { font-size: 0.8rem; text-transform: uppercase; color: var(--muted); }
 .doclist tr:last-child td { border-bottom: none; }
 
 .section-title { font-size: 1.1rem; margin: 20px 0 8px; }
 
 /* Sharing */
 .editor-header-right { display: flex; align-items: center; gap: 12px; }
-.ownership { font-size: 0.85rem; color: #344054; background: #eef0f3; padding: 3px 10px; border-radius: 999px; }
+.ownership { font-size: 0.85rem; color: var(--pill-text); background: var(--hover); padding: 3px 10px; border-radius: 999px; }
 .share-panel {
-  background: #fff;
-  border: 1px solid #e1e4e8;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
   border-radius: 10px;
   padding: 16px 20px;
   margin-bottom: 16px;
@@ -75,15 +176,23 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
 .share-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .share-header h2 { font-size: 1.05rem; }
 .share-list { list-style: none; margin: 0 0 12px; padding: 0; }
-.share-list li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eef0f3; }
-.badge { font-size: 0.75rem; color: #1a5fb4; background: #e8f0fb; padding: 2px 8px; border-radius: 999px; }
+.share-list li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--divider); }
+.badge { font-size: 0.75rem; color: var(--badge-text); background: var(--badge-bg); padding: 2px 8px; border-radius: 999px; }
 .share-form { display: flex; gap: 8px; margin-bottom: 8px; }
-.share-form input { flex: 1; font: inherit; padding: 6px 10px; border: 1px solid #c4c9d0; border-radius: 6px; }
+.share-form input {
+  flex: 1;
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
 
 /* Editor */
 .editor-page { max-width: 860px; }
 .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.status { font-size: 0.85rem; color: #667085; }
+.status { font-size: 0.85rem; color: var(--muted); }
 .doc-title {
   width: 100%;
   font: inherit;
@@ -94,10 +203,48 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
+  color: var(--text);
 }
-.doc-title:hover { border-color: #e1e4e8; }
-.doc-title:focus { outline: none; border-color: #1a5fb4; background: #fff; }
-.editor-wrap { background: #fff; border-radius: 8px; }
-.editor-wrap .ql-toolbar { border-radius: 8px 8px 0 0; background: #fafbfc; }
+.doc-title:hover { border-color: var(--border-soft); }
+.doc-title:focus { outline: none; border-color: var(--primary); background: var(--surface); }
+.editor-wrap { background: var(--surface); border-radius: 8px; }
+.editor-wrap .ql-toolbar { border-radius: 8px 8px 0 0; background: var(--surface-alt); }
 .editor-wrap .ql-container { border-radius: 0 0 8px 8px; font-size: 1rem; }
 .editor-wrap .ql-editor { min-height: 60vh; padding: 24px 32px; }
+
+/* Quill snow hard-codes light colours; these rules repeat its selectors under .editor-wrap so they
+   win by specificity regardless of stylesheet order, and read the theme variables. */
+.editor-wrap .ql-toolbar.ql-snow,
+.editor-wrap .ql-container.ql-snow { border-color: var(--ql-border); }
+.editor-wrap .ql-editor { color: var(--text); }
+.editor-wrap .ql-editor.ql-blank::before { color: var(--ql-placeholder); }
+.editor-wrap .ql-snow .ql-stroke { stroke: var(--ql-stroke); }
+.editor-wrap .ql-snow .ql-fill,
+.editor-wrap .ql-snow .ql-stroke.ql-fill { fill: var(--ql-stroke); }
+.editor-wrap .ql-snow .ql-picker { color: var(--ql-stroke); }
+.editor-wrap .ql-snow .ql-picker-options { background-color: var(--surface); }
+.editor-wrap .ql-snow .ql-picker.ql-expanded .ql-picker-label,
+.editor-wrap .ql-snow .ql-picker.ql-expanded .ql-picker-options { border-color: var(--ql-border); }
+
+/* Hover, focus and active states: the active button must stay distinguishable from the rest. */
+.editor-wrap .ql-snow.ql-toolbar button:hover,
+.editor-wrap .ql-snow.ql-toolbar button:focus,
+.editor-wrap .ql-snow.ql-toolbar button.ql-active,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-label:hover,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-label.ql-active,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-item:hover,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-item.ql-selected { color: var(--ql-accent); }
+.editor-wrap .ql-snow.ql-toolbar button:hover .ql-stroke,
+.editor-wrap .ql-snow.ql-toolbar button:focus .ql-stroke,
+.editor-wrap .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke { stroke: var(--ql-accent); }
+.editor-wrap .ql-snow.ql-toolbar button:hover .ql-fill,
+.editor-wrap .ql-snow.ql-toolbar button:focus .ql-fill,
+.editor-wrap .ql-snow.ql-toolbar button.ql-active .ql-fill,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-label:hover .ql-fill,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-item:hover .ql-fill,
+.editor-wrap .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill { fill: var(--ql-accent); }

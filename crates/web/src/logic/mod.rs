@@ -3,4 +3,5 @@
 pub mod api_shapes;
 pub mod save_state;
 pub mod sharing;
+pub mod theme;
 pub mod validate;

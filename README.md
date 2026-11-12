@@ -24,6 +24,7 @@ To see sharing: sign in as Alice, create a document, share it with `bob@ajaia.te
   - Markdown headings, bold, italic, bulleted and numbered lists (including nested ones) keep their formatting. Other Markdown (links, code, quotes, tables) is imported as plain text.
 - **Sharing:** the owner of a document grants access to another user by email. The document list separates "My documents" from "Shared with me" and shows each document's owner. A user a document is shared with can open, edit and rename it; only the owner can share it. Anyone else gets "not found".
 - **Persistence:** documents, formatting, sessions and shares are stored in Postgres.
+- **Light and dark themes:** the app follows the system setting; the button in the bottom-right corner switches theme and remembers the choice.
 
 ## Stack
 
