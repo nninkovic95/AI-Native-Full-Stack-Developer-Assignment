@@ -84,6 +84,11 @@ pub async fn share_document(id: Uuid, email: &str) -> ApiResult<User> {
     json(send(json_post("POST", &format!("/api/documents/{id}/shares"), &body)).await?).await
 }
 
+/// The success answer is 204 with no body, so nothing is parsed.
+pub async fn delete_document(id: Uuid) -> ApiResult<()> {
+    send(Request::delete(&format!("/api/documents/{id}")).build()).await.map(|_| ())
+}
+
 /// Uploads a `.txt` or `.md` file as multipart form data and returns the new document.
 /// No Content-Type is set so the browser adds the multipart boundary itself.
 pub async fn import_document(file: &web_sys::File) -> ApiResult<Document> {

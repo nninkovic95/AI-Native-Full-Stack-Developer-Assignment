@@ -153,6 +153,22 @@ pub async fn update(
     Ok(Json(load_accessible(&state.pool, &user, id).await?))
 }
 
+/// Removes only the document row: its shares follow through the foreign key's `ON DELETE CASCADE`.
+pub async fn delete(
+    State(state): State<AppState>,
+    CurrentUser(user): CurrentUser,
+    DocId(id): DocId,
+) -> AppResult<StatusCode> {
+    if !load_accessible(&state.pool, &user, id).await?.is_owner {
+        return Err(AppError::Forbidden("Only the owner can delete this document".into()));
+    }
+    sqlx::query("DELETE FROM documents WHERE id = $1")
+        .bind(id)
+        .execute(&state.pool)
+        .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
 pub async fn list(
     State(state): State<AppState>,
     CurrentUser(user): CurrentUser,

@@ -55,6 +55,7 @@ fn api(state: AppState) -> Router {
             "/documents/{id}",
             get(docs::get_one)
                 .patch(docs::update)
+                .delete(docs::delete)
                 .layer(DefaultBodyLimit::max(MAX_DOCUMENT_BYTES)),
         )
         .route("/documents/{id}/shares", get(shares::list).post(shares::create))

@@ -107,6 +107,7 @@ button:hover:not(:disabled) { background: var(--hover); }
 button:disabled { opacity: 0.6; cursor: default; }
 button.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 button.primary:hover:not(:disabled) { background: var(--primary-hover); }
+button.danger { color: var(--error); border-color: var(--error); }
 .error { color: var(--error); margin: 8px 0; }
 .muted { color: var(--muted); }
 .hint { font-size: 0.85rem; color: var(--muted); margin: 0; }
@@ -160,6 +161,7 @@ code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
 .doclist th, .doclist td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--divider); }
 .doclist th { font-size: 0.8rem; text-transform: uppercase; color: var(--muted); }
 .doclist tr:last-child td { border-bottom: none; }
+.doclist .doclist-actions { text-align: right; }
 
 .section-title { font-size: 1.1rem; margin: 20px 0 8px; }
 
