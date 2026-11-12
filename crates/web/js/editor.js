@@ -27,4 +27,7 @@ export function getContents(quill) {
 
 export function setContents(quill, json) {
   quill.setContents(JSON.parse(json), "silent");
+  // Quill's history records silent changes too; without this, undo removes the
+  // loaded document and the empty result is autosaved.
+  quill.history.clear();
 }

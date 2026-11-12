@@ -40,15 +40,29 @@ pub fn list_page() -> Html {
         });
     }
 
+    // A second click while the request is pending would create a second, empty document.
+    // The flag is checked synchronously; the state only drives the button's disabled look.
+    let create_pending = use_mut_ref(|| false);
+    let creating = use_state(|| false);
     let on_new = {
         let (error, navigator) = (error.clone(), navigator.clone());
+        let (create_pending, creating) = (create_pending.clone(), creating.clone());
         Callback::from(move |_| {
+            if create_pending.replace(true) {
+                return;
+            }
+            creating.set(true);
             let (error, navigator) = (error.clone(), navigator.clone());
+            let (create_pending, creating) = (create_pending.clone(), creating.clone());
             spawn_local(async move {
                 match api::create_document().await {
                     Ok(doc) => navigator.push(&Route::Editor { id: doc.id }),
                     Err(f) if f.kind == FailureKind::Unauthorized => navigator.push(&Route::Login),
-                    Err(f) => error.set(Some(f.message)),
+                    Err(f) => {
+                        *create_pending.borrow_mut() = false;
+                        creating.set(false);
+                        error.set(Some(f.message));
+                    }
                 }
             });
         })
@@ -123,7 +137,9 @@ pub fn list_page() -> Html {
                     <button onclick={on_import_click} disabled={*importing}>
                         { if *importing { "Importing…" } else { "Import file" } }
                     </button>
-                    <button class="primary" onclick={on_new}>{ "New document" }</button>
+                    <button class="primary" onclick={on_new} disabled={*creating}>
+                        { if *creating { "Creating…" } else { "New document" } }
+                    </button>
                 </div>
                 <input
                     ref={file_input}

@@ -99,6 +99,8 @@ The server applies migrations and creates the demo accounts when it starts, so t
 
 - **No real-time collaboration.** Two people editing the same document at once overwrite each other; the last save wins.
 - **Autosave window:** closing or reloading the tab within about a second of the last keystroke can lose that keystroke. Navigating inside the app saves first.
+- **Failed saves** are shown next to the title and retried on the next edit, not on a timer. Leaving the page while the status says "Save failed" loses the unsaved edits.
+- **Browser Back on the sign-in page** returns to the sign-in page when signed out.
 - **Images are not supported.** Pasted or dropped images are ignored.
 - **Sharing is all-or-nothing:** a shared user can edit; there are no view-only or comment roles, and access cannot be revoked in the UI.
 - **Documents cannot be deleted** in the UI.
