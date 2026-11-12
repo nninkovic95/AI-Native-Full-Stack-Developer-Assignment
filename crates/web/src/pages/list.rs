@@ -2,7 +2,7 @@ use shared::{DocumentSummary, User};
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
 use uuid::Uuid;
-use web_sys::HtmlInputElement;
+use web_sys::{HtmlElement, HtmlInputElement};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -74,24 +74,48 @@ pub fn list_page() -> Html {
     // the state only drives the disabled look and the stale `docs` handle is never overwritten by a second delete.
     let delete_pending = use_mut_ref(|| false);
     let deleting = use_state(|| None::<Uuid>);
+    // The confirmation is an in-page modal: a native confirm() dialog is not captured by tab screen recordings.
+    let pending_confirm = use_state(|| None::<(Uuid, String)>);
+    let cancel_button = use_node_ref();
+    {
+        let cancel_button = cancel_button.clone();
+        use_effect_with(pending_confirm.is_some(), move |open| {
+            if *open {
+                if let Some(button) = cancel_button.cast::<HtmlElement>() {
+                    let _ = button.focus();
+                }
+            }
+        });
+    }
     let on_delete = {
+        let pending_confirm = pending_confirm.clone();
+        Callback::from(move |request: (Uuid, String)| pending_confirm.set(Some(request)))
+    };
+    // Closing is ignored while the request is in flight; the modal closes itself when it finishes.
+    let on_cancel = {
+        let (pending_confirm, deleting) = (pending_confirm.clone(), deleting.clone());
+        Callback::from(move |_: ()| {
+            if deleting.is_none() {
+                pending_confirm.set(None);
+            }
+        })
+    };
+    let on_confirm = {
         let (docs, error, navigator) = (docs.clone(), error.clone(), navigator.clone());
-        let (delete_pending, deleting) = (delete_pending.clone(), deleting.clone());
-        Callback::from(move |(id, title): (Uuid, String)| {
-            let confirmed = web_sys::window()
-                .and_then(|w| w.confirm_with_message(&delete_confirm_message(&title)).ok())
-                .unwrap_or(false);
-            if !confirmed || delete_pending.replace(true) {
+        let (delete_pending, deleting, pending_confirm) = (delete_pending.clone(), deleting.clone(), pending_confirm.clone());
+        Callback::from(move |id: Uuid| {
+            if delete_pending.replace(true) {
                 return;
             }
             error.set(None);
             deleting.set(Some(id));
             let (docs, error, navigator) = (docs.clone(), error.clone(), navigator.clone());
-            let (delete_pending, deleting) = (delete_pending.clone(), deleting.clone());
+            let (delete_pending, deleting, pending_confirm) = (delete_pending.clone(), deleting.clone(), pending_confirm.clone());
             spawn_local(async move {
                 let result = api::delete_document(id).await;
                 *delete_pending.borrow_mut() = false;
                 deleting.set(None);
+                pending_confirm.set(None);
                 match result {
                     Ok(()) => {
                         if let Some(current) = &*docs {
@@ -157,6 +181,67 @@ pub fn list_page() -> Html {
         })
     };
 
+    let modal = match &*pending_confirm {
+        None => html! {},
+        Some((id, title)) => {
+            let busy = deleting.is_some();
+            let id = *id;
+            html! {
+                <div
+                    class="modal-backdrop"
+                    onclick={{
+                        let on_cancel = on_cancel.clone();
+                        Callback::from(move |_| on_cancel.emit(()))
+                    }}
+                    onkeydown={{
+                        let on_cancel = on_cancel.clone();
+                        Callback::from(move |e: KeyboardEvent| {
+                            if e.key() == "Escape" {
+                                on_cancel.emit(());
+                            }
+                        })
+                    }}
+                >
+                    // Clicks inside the dialog must not reach the backdrop, which closes the modal.
+                    // tabindex keeps focus inside the dialog so Escape still reaches the backdrop after a click on its text.
+                    <div
+                        class="modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="delete-dialog-title"
+                        tabindex="-1"
+                        onclick={Callback::from(|e: MouseEvent| e.stop_propagation())}
+                    >
+                        <h2 id="delete-dialog-title">{ "Delete document?" }</h2>
+                        <p>{ delete_confirm_message(title) }</p>
+                        <div class="modal-actions">
+                            <button
+                                ref={cancel_button.clone()}
+                                disabled={busy}
+                                onclick={{
+                                    let on_cancel = on_cancel.clone();
+                                    Callback::from(move |_| on_cancel.emit(()))
+                                }}
+                            >
+                                { "Cancel" }
+                            </button>
+                            <button
+                                class="danger"
+                                disabled={busy}
+                                onclick={{
+                                    let on_confirm = on_confirm.clone();
+                                    Callback::from(move |_| on_confirm.emit(id))
+                                }}
+                            >
+                                { if busy { "Deleting…" } else { "Delete" } }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    };
+
     html! {
         <main class="page">
             <header class="topbar">
@@ -205,6 +290,7 @@ pub fn list_page() -> Html {
                     }
                 }
             } }
+            { modal }
         </main>
     }
 }
