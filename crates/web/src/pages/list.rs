@@ -7,7 +7,10 @@ use yew_router::prelude::*;
 
 use crate::{
     api::{self, FailureKind},
-    logic::validate::{import_accept, import_hint, validate_import},
+    logic::{
+        sharing::{owner_label, split_documents},
+        validate::{import_accept, import_hint, validate_import},
+    },
     Route,
 };
 
@@ -137,22 +140,38 @@ pub fn list_page() -> Html {
             { match &*docs {
                 None if error.is_none() => html! { <p class="muted">{ "Loading…" }</p> },
                 None => html! {},
-                Some(d) if d.is_empty() => html! { <p class="muted">{ "No documents yet. Create one to get started." }</p> },
-                Some(d) => html! {
-                    <table class="doclist">
-                        <thead><tr><th>{ "Title" }</th><th>{ "Owner" }</th><th>{ "Last edited" }</th></tr></thead>
-                        <tbody>
-                            { for d.iter().map(|doc| html! {
-                                <tr key={doc.id.to_string()}>
-                                    <td><Link<Route> to={Route::Editor { id: doc.id }}>{ &doc.title }</Link<Route>></td>
-                                    <td>{ &doc.owner.name }</td>
-                                    <td>{ doc.updated_at.format("%Y-%m-%d %H:%M UTC").to_string() }</td>
-                                </tr>
-                            }) }
-                        </tbody>
-                    </table>
-                },
+                Some(all) => {
+                    let (owned, shared_with_me) = split_documents(all.clone());
+                    html! {
+                        <>
+                            <h2 class="section-title">{ "My documents" }</h2>
+                            { doc_table(&owned, "No documents yet. Create one to get started.") }
+                            <h2 class="section-title">{ "Shared with me" }</h2>
+                            { doc_table(&shared_with_me, "Nothing has been shared with you yet") }
+                        </>
+                    }
+                }
             } }
         </main>
+    }
+}
+
+fn doc_table(docs: &[DocumentSummary], empty_message: &str) -> Html {
+    if docs.is_empty() {
+        return html! { <p class="muted">{ empty_message }</p> };
+    }
+    html! {
+        <table class="doclist">
+            <thead><tr><th>{ "Title" }</th><th>{ "Owner" }</th><th>{ "Last edited" }</th></tr></thead>
+            <tbody>
+                { for docs.iter().map(|doc| html! {
+                    <tr key={doc.id.to_string()}>
+                        <td><Link<Route> to={Route::Editor { id: doc.id }}>{ &doc.title }</Link<Route>></td>
+                        <td>{ if doc.is_owner { "You".to_string() } else { owner_label(false, &doc.owner.name) } }</td>
+                        <td>{ doc.updated_at.format("%Y-%m-%d %H:%M UTC").to_string() }</td>
+                    </tr>
+                }) }
+            </tbody>
+        </table>
     }
 }

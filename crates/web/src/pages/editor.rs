@@ -16,8 +16,10 @@ use crate::{
     logic::{
         api_shapes::{content_update, title_update},
         save_state::{SaveEvent, SaveState},
+        sharing::owner_label,
         validate::normalize_title,
     },
+    pages::share_panel::SharePanel,
     Route,
 };
 
@@ -83,6 +85,7 @@ pub fn editor_page(props: &EditorProps) -> Html {
     let title_error = use_state(|| None::<String>);
     let last_saved_title = use_mut_ref(String::new);
 
+    let share_open = use_state(|| false);
     let label = use_state(String::new);
     let editor_ref = use_node_ref();
     let quill = use_mut_ref(|| None::<JsValue>);
@@ -199,12 +202,31 @@ pub fn editor_page(props: &EditorProps) -> Html {
         }
     });
 
+    let toggle_share = {
+        let share_open = share_open.clone();
+        Callback::from(move |_| share_open.set(!*share_open))
+    };
+    let close_share = {
+        let share_open = share_open.clone();
+        Callback::from(move |_: ()| share_open.set(false))
+    };
+
     html! {
         <main class="page editor-page">
             <div class="editor-header">
                 <Link<Route> to={Route::List}>{ "← All documents" }</Link<Route>>
-                <span class="status" aria-live="polite">{ (*label).clone() }</span>
+                <div class="editor-header-right">
+                    if let Some(d) = &*doc {
+                        <span class="ownership">{ owner_label(d.is_owner, &d.owner.name) }</span>
+                        <button onclick={toggle_share} aria-expanded={share_open.to_string()}>{ "Share" }</button>
+                    }
+                    <span class="status" aria-live="polite">{ (*label).clone() }</span>
+                </div>
             </div>
+            // Rendered outside the editor wrapper so opening it never touches Quill's DOM.
+            if let (true, Some(d)) = (*share_open, &*doc) {
+                <SharePanel id={d.id} owner={d.owner.clone()} is_owner={d.is_owner} on_close={close_share} />
+            }
             if let Some(msg) = &*load_error {
                 <p class="error" role="alert">{ msg }</p>
             } else if doc.is_none() {

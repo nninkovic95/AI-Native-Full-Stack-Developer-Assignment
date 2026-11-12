@@ -2,7 +2,7 @@
 
 use gloo_net::http::{Request, Response};
 use serde::{de::DeserializeOwned, Serialize};
-use shared::{CreateDocument, Document, DocumentSummary, LoginRequest, UpdateDocument, User};
+use shared::{CreateDocument, Document, DocumentSummary, LoginRequest, ShareRequest, UpdateDocument, User};
 use uuid::Uuid;
 
 pub use crate::logic::api_shapes::{ApiFailure, FailureKind};
@@ -73,6 +73,15 @@ pub async fn get_document(id: Uuid) -> ApiResult<Document> {
 
 pub async fn update_document(id: Uuid, body: &UpdateDocument) -> ApiResult<Document> {
     json(send(json_post("PATCH", &format!("/api/documents/{id}"), body)).await?).await
+}
+
+pub async fn list_shares(id: Uuid) -> ApiResult<Vec<User>> {
+    json(send(Request::get(&format!("/api/documents/{id}/shares")).build()).await?).await
+}
+
+pub async fn share_document(id: Uuid, email: &str) -> ApiResult<User> {
+    let body = ShareRequest { email: email.to_string() };
+    json(send(json_post("POST", &format!("/api/documents/{id}/shares"), &body)).await?).await
 }
 
 /// Uploads a `.txt` or `.md` file as multipart form data and returns the new document.

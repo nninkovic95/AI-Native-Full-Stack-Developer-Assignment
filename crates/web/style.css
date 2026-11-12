@@ -60,6 +60,26 @@ code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
 .doclist th { font-size: 0.8rem; text-transform: uppercase; color: #667085; }
 .doclist tr:last-child td { border-bottom: none; }
 
+.section-title { font-size: 1.1rem; margin: 20px 0 8px; }
+
+/* Sharing */
+.editor-header-right { display: flex; align-items: center; gap: 12px; }
+.ownership { font-size: 0.85rem; color: #344054; background: #eef0f3; padding: 3px 10px; border-radius: 999px; }
+.share-panel {
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.share-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.share-header h2 { font-size: 1.05rem; }
+.share-list { list-style: none; margin: 0 0 12px; padding: 0; }
+.share-list li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eef0f3; }
+.badge { font-size: 0.75rem; color: #1a5fb4; background: #e8f0fb; padding: 2px 8px; border-radius: 999px; }
+.share-form { display: flex; gap: 8px; margin-bottom: 8px; }
+.share-form input { flex: 1; font: inherit; padding: 6px 10px; border: 1px solid #c4c9d0; border-radius: 6px; }
+
 /* Editor */
 .editor-page { max-width: 860px; }
 .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
