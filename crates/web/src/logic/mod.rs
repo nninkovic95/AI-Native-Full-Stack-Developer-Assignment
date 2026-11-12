@@ -1,0 +1,5 @@
+//! Pure logic with no browser or Yew dependency, so it is unit-tested natively.
+
+pub mod api_shapes;
+pub mod save_state;
+pub mod validate;

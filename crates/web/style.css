@@ -6,3 +6,75 @@ body {
   background: #f6f7f9;
 }
 .page { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+/* Shared */
+h1, h2 { margin: 0; }
+a { color: #1a5fb4; }
+button {
+  font: inherit;
+  padding: 6px 14px;
+  border: 1px solid #c4c9d0;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: #eef0f3; }
+button:disabled { opacity: 0.6; cursor: default; }
+button.primary { background: #1a5fb4; border-color: #1a5fb4; color: #fff; }
+button.primary:hover:not(:disabled) { background: #174f95; }
+.error { color: #b42318; margin: 8px 0; }
+.muted { color: #667085; }
+.hint { font-size: 0.85rem; color: #667085; margin: 0; }
+code { background: #eef0f3; padding: 1px 5px; border-radius: 4px; }
+
+/* Login */
+.login { max-width: 420px; padding-top: 72px; }
+.login h1 { margin-bottom: 16px; text-align: center; }
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 10px;
+}
+.card label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.card input { font: inherit; padding: 8px 10px; border: 1px solid #c4c9d0; border-radius: 6px; }
+
+/* Document list */
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.userbox { display: flex; gap: 12px; align-items: center; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.doclist {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+}
+.doclist th, .doclist td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #eef0f3; }
+.doclist th { font-size: 0.8rem; text-transform: uppercase; color: #667085; }
+.doclist tr:last-child td { border-bottom: none; }
+
+/* Editor */
+.editor-page { max-width: 860px; }
+.editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.status { font-size: 0.85rem; color: #667085; }
+.doc-title {
+  width: 100%;
+  font: inherit;
+  font-size: 2rem;
+  font-weight: 700;
+  padding: 6px 8px;
+  margin-bottom: 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+}
+.doc-title:hover { border-color: #e1e4e8; }
+.doc-title:focus { outline: none; border-color: #1a5fb4; background: #fff; }
+.editor-wrap { background: #fff; border-radius: 8px; }
+.editor-wrap .ql-toolbar { border-radius: 8px 8px 0 0; background: #fafbfc; }
+.editor-wrap .ql-container { border-radius: 0 0 8px 8px; font-size: 1rem; }
+.editor-wrap .ql-editor { min-height: 60vh; padding: 24px 32px; }

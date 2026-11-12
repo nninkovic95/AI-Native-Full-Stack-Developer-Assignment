@@ -22,3 +22,24 @@ A running log of key decisions, failed attempts, and changes or rejections durin
 - Cargo workspace: `shared` (API types for both sides), `server` (Axum), `web` (Yew). `default-members` excludes `web` so root `cargo build`/`cargo test` stays native.
 - Axum serves the Trunk `dist/` with an `index.html` fallback so client-side routes survive a refresh.
 - Dockerfile installs Trunk from its prebuilt release binary rather than `cargo install`, to keep Render's build time down.
+- The AI sandbox cannot reach crates.io, GitHub (push) or the Docker socket: dependencies for every section were declared up front so one `cargo fetch` by the user covered them; pushes are done by the user.
+
+## Section 1: Editing (backend)
+
+- Tests could not reach a Postgres on the host (the sandbox has its own network namespace and blocks Unix sockets). Rejected: running tests outside the sandbox by hand (too slow per red/green cycle). Chosen: install the Postgres server binaries and start a throwaway instance per test run (`scripts/with-test-db.sh`), TCP only, data under `$TMPDIR`. This also gives reviewers a one-command test run.
+- Session token: two random UUIDv4s concatenated, stored in a `sessions` table with a 7-day expiry; no signing key to manage. Cookie `Max-Age` needed the `time` crate, already in the tree through `cookie`.
+- Login returns the same 401 message for an unknown email and a wrong password, so accounts cannot be enumerated.
+- One `load_accessible` query is the single access check for read and write; owner or a share row, otherwise 404.
+- `PATCH` uses `COALESCE` so a title-only or content-only update leaves the other field alone; tests cover both.
+- Argon2 is built with `opt-level = 3` in the dev profile; unoptimised hashing made every test and local start slow.
+- Session token: note for reviewers that it is stored unhashed; acceptable for demo accounts, listed as a next step.
+- TDD note: the wrong-password test passed on the first run because the login implementation already covered it; it stays as a regression test.
+
+## Section 1: Editing (frontend, by subagent)
+
+- Delegated to a Sonnet subagent after the backend tests were green, with the shared DTOs and routes as the fixed contract. It returned login, list and editor pages, a 27-line JS glue file for Quill, and 12 native unit tests for the pure logic (autosave state machine, form validation, request shapes).
+- Integrator review: re-ran `cargo test -p web` and `trunk build` (both pass), read the editor page, the JS glue and the fetch wrappers. Accepted without changes.
+- Accepted limits, to be stated in the README: a hard refresh inside the 800 ms autosave window can drop the last keystrokes; "last edited" is shown in UTC; Quill comes from a CDN.
+- The subagent skipped the red step for one slice (`failure_from_response`) and said so; the test was kept.
+- Not yet verified in a browser: the AI sandbox cannot run the server, so the create/format/rename/refresh gate is run by hand.
+- A review workflow over the backend and the never-built Dockerfile was first launched with up to 9 agents, then stopped and capped at 5 (three reviewers, verifiers only for the most severe findings).
