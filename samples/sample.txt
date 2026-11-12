@@ -1,0 +1,6 @@
+Meeting notes
+
+Plain text files are imported as they are.
+Each line becomes a line in the document.
+
+Formatting can be added in the editor afterwards.

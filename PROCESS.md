@@ -55,4 +55,25 @@ A running log of key decisions, failed attempts, and changes or rejections durin
 ## Section 2: File import
 
 - The converter started in the main session (plain text, headings), then the rest of the section moved to a workflow capped at 5 agents: a backend agent working test-first; once its tests pass, a Sonnet UI agent and an independent read-only reviewer in parallel; a repair agent only if the reviewer finds a real defect or the UI does not build. The workflow stops after the backend step if its tests are not green, so no UI is built against an unfinished contract.
+- Result: 4 of 5 agents used, about 35 minutes of wall-clock against 15 planned. The backend agent took 8 minutes; the UI agent 15 and the reviewer 20. Slower than working directly, but the reviewer found two real converter defects that the author's tests had missed:
+  - a code block or quote inside a list item fused with the item's text and left an empty bullet;
+  - a Markdown hard line break was dropped, joining the words on either side.
+  Both were reproduced with a failing test first, then fixed by the repair agent. Its choice, kept: a hard break inside a list item or heading becomes a space, because Quill has no line break inside a line and splitting would create a second list item.
+- Fixed in the main session, test-first: a UTF-8 byte-order mark hid the first heading of a `.md` file (reviewer finding, low severity).
+- Integrator check before committing: full server suite (49 tests), web unit tests (18) and `trunk build` re-run in the main session; read the upload handler (session checked before the body is read, explicit body limit on the route, size limit answered as JSON 413).
+- Workflow script bug, harmless: the "UI not clean" condition treated the UI agent's free-text "no contract problems" note as a problem, which gave the repair agent a non-issue to reject. Fixed in the next workflow by using a boolean field.
+- Both agents reported using shell heredocs to write code against a standing rule, and one skipped the red step for two slices that the previous slice already satisfied; both were disclosed in their reports. The next workflow's brief forbids heredocs explicitly.
+- Changed plan for speed: section 5's validation backend runs in parallel with section 3's UI (different crates), and the docs are written in the main session while agents work.
 - Markdown is converted to a Quill Delta on the server rather than to HTML: the stored format stays the same for typed and imported documents, and the conversion is a pure function that can be tested against hand-written expected Deltas.
+
+## Section 3: Sharing, with section 5's validation in parallel
+
+- One workflow, 4 of 5 agents used, about 12 minutes (the section 2 workflow took 35): a sharing backend agent first (test-first, 13 HTTP tests); once green, three agents at once on files that do not overlap: the sharing UI (Sonnet, `crates/web`), the validation backend (`crates/server`), and a read-only access-control reviewer. Briefs carried explicit time targets and narrower reading lists this time.
+- The contract (routes, status codes, exact error messages) was written into the workflow before any agent started, so the UI agent and the reviewer worked from the same text as the backend agent.
+- Access-control review: no defect found. It confirmed that every document route goes through the one access check, that the owner check comes after it (strangers get 404, shared users 403), and that a duplicate share is decided by the primary key rather than a pre-check that could race.
+- Sharing decisions: a shared user can see who else has access but cannot share onward; an unknown email is a 400 with a plain message (the demo accounts are public, so there is nothing to hide); sharing twice is a 409.
+- TDD honesty: 4 of the 13 sharing tests passed on first run because `load_accessible` already honoured share rows from section 1. They stay as the proof that sharing works end to end.
+- Validation: titles are trimmed and limited to 200 characters, content must be a Quill Delta, and every non-2xx API answer now has the `{error}` JSON shape, including malformed JSON, non-UUID ids, oversized bodies, unknown API paths and wrong methods (20 tests). This closes the two items deferred from the section 1 review.
+- Integrator check before committing: full server suite (82 tests), web unit tests (25) and `trunk build` re-run in the main session; read the share handlers and the editor page change (the share panel is rendered outside the editor wrapper so opening it does not re-create Quill; to be confirmed in the browser gate).
+- A second, read-only workflow (cap 4) reviews the committed web client in parallel, since the UI had no independent review so far.
+- The docs (README, ARCHITECTURE, SUBMISSION, AI_WORKFLOW skeleton) were written in the main session while the agents worked, then checked against the built behaviour before being committed.
