@@ -85,6 +85,11 @@ pub async fn share_document(id: Uuid, email: &str) -> ApiResult<User> {
 }
 
 /// The success answer is 204 with no body, so nothing is parsed.
+pub async fn unshare_document(id: Uuid, user_id: Uuid) -> ApiResult<()> {
+    send(Request::delete(&format!("/api/documents/{id}/shares/{user_id}")).build()).await.map(|_| ())
+}
+
+/// The success answer is 204 with no body, so nothing is parsed.
 pub async fn delete_document(id: Uuid) -> ApiResult<()> {
     send(Request::delete(&format!("/api/documents/{id}")).build()).await.map(|_| ())
 }

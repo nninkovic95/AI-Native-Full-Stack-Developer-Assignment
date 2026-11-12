@@ -18,6 +18,8 @@ pub enum AppError {
     Forbidden(String),
     /// Also used when the caller has no access, so document IDs cannot be probed.
     NotFound,
+    /// Only the owner is told this, so it gives nothing away about a document the caller cannot open.
+    ShareNotFound,
     Conflict(String),
     PayloadTooLarge(String),
     Internal(String),
@@ -35,6 +37,9 @@ impl IntoResponse for AppError {
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Not signed in".into()),
             AppError::Forbidden(m) => (StatusCode::FORBIDDEN, m),
             AppError::NotFound => (StatusCode::NOT_FOUND, "Document not found".into()),
+            AppError::ShareNotFound => {
+                (StatusCode::NOT_FOUND, "That person does not have access".into())
+            }
             AppError::Conflict(m) => (StatusCode::CONFLICT, m),
             AppError::PayloadTooLarge(m) => (StatusCode::PAYLOAD_TOO_LARGE, m),
             AppError::Internal(m) => {

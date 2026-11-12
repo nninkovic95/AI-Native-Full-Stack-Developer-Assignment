@@ -7,7 +7,7 @@ use yew_router::prelude::*;
 
 use crate::{
     api::{self, FailureKind},
-    logic::sharing::validate_share_email,
+    logic::sharing::{remove_label, validate_share_email, without_user},
     Route,
 };
 
@@ -27,6 +27,7 @@ pub fn share_panel(props: &SharePanelProps) -> Html {
     let email = use_state(String::new);
     let error = use_state(|| None::<String>);
     let busy = use_state(|| false);
+    let remove_pending = use_mut_ref(|| false);
 
     {
         let (people, error, navigator) = (people.clone(), error.clone(), navigator.clone());
@@ -54,9 +55,11 @@ pub fn share_panel(props: &SharePanelProps) -> Html {
         let (email, error, busy, people, navigator) =
             (email.clone(), error.clone(), busy.clone(), people.clone(), navigator.clone());
         let (id, own_email) = (props.id, props.owner.email.clone());
+        let remove_pending = remove_pending.clone();
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
-            if *busy {
+            // A share finishing during a removal would be dropped when the removal rewrites the list.
+            if *busy || *remove_pending.borrow() {
                 return;
             }
             let checked = match validate_share_email(&email, &own_email) {
@@ -88,6 +91,38 @@ pub fn share_panel(props: &SharePanelProps) -> Html {
         })
     };
 
+    // One removal at a time: the flag is checked synchronously so a double click sends one request,
+    // and the list is never rewritten from a stale snapshot by a second one. The state only drives the disabled look.
+    let removing = use_state(|| None::<Uuid>);
+    let on_remove = {
+        let (people, error, navigator) = (people.clone(), error.clone(), navigator.clone());
+        let (remove_pending, removing) = (remove_pending.clone(), removing.clone());
+        let (id, busy) = (props.id, busy.clone());
+        Callback::from(move |user_id: Uuid| {
+            if *busy || remove_pending.replace(true) {
+                return;
+            }
+            error.set(None);
+            removing.set(Some(user_id));
+            let (people, error, navigator) = (people.clone(), error.clone(), navigator.clone());
+            let (remove_pending, removing) = (remove_pending.clone(), removing.clone());
+            spawn_local(async move {
+                let result = api::unshare_document(id, user_id).await;
+                *remove_pending.borrow_mut() = false;
+                removing.set(None);
+                match result {
+                    Ok(()) => {
+                        if let Some(current) = &*people {
+                            people.set(Some(without_user(current.clone(), user_id)));
+                        }
+                    }
+                    Err(f) if f.kind == FailureKind::Unauthorized => navigator.push(&Route::Login),
+                    Err(f) => error.set(Some(f.message)),
+                }
+            });
+        })
+    };
+
     let on_close = {
         let cb = props.on_close.clone();
         Callback::from(move |_| cb.emit(()))
@@ -105,7 +140,22 @@ pub fn share_panel(props: &SharePanelProps) -> Html {
                     <span class="badge">{ "Owner" }</span>
                 </li>
                 { for people.iter().flatten().map(|u| html! {
-                    <li key={u.id.to_string()}><span>{ format!("{} ({})", u.name, u.email) }</span></li>
+                    <li key={u.id.to_string()}>
+                        <span>{ format!("{} ({})", u.name, u.email) }</span>
+                        if props.is_owner {
+                            <button
+                                class="danger"
+                                aria-label={remove_label(&u.name)}
+                                disabled={*removing == Some(u.id)}
+                                onclick={{
+                                    let (on_remove, user_id) = (on_remove.clone(), u.id);
+                                    Callback::from(move |_| on_remove.emit(user_id))
+                                }}
+                            >
+                                { if *removing == Some(u.id) { "Removing…" } else { "Remove" } }
+                            </button>
+                        }
+                    </li>
                 }) }
             </ul>
             if props.is_owner {

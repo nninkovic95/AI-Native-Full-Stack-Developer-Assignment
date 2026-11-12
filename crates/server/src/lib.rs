@@ -8,7 +8,7 @@ pub mod shares;
 use axum::{
     extract::DefaultBodyLimit,
     http::StatusCode,
-    routing::{get, post},
+    routing::{delete, get, post},
     Json, Router,
 };
 pub use error::AppError;
@@ -59,6 +59,7 @@ fn api(state: AppState) -> Router {
                 .layer(DefaultBodyLimit::max(MAX_DOCUMENT_BYTES)),
         )
         .route("/documents/{id}/shares", get(shares::list).post(shares::create))
+        .route("/documents/{id}/shares/{user_id}", delete(shares::remove))
         // Without its own fallback, an unknown API path would be answered with the web page.
         .fallback(api_not_found)
         .method_not_allowed_fallback(api_method_not_allowed)

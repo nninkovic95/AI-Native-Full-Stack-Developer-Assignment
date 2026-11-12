@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{Path, State},
     http::StatusCode,
     Json,
 };
@@ -75,4 +75,28 @@ pub async fn create(
         ));
     }
     Ok((StatusCode::CREATED, Json(User { id: user_id, email, name })))
+}
+
+pub async fn remove(
+    State(state): State<AppState>,
+    CurrentUser(user): CurrentUser,
+    Path((id, user_id)): Path<(String, String)>,
+) -> AppResult<StatusCode> {
+    // An id that is not a UUID names no document, the same answer the single-id routes give.
+    let id: Uuid = id.parse().map_err(|_| AppError::NotFound)?;
+    if !load_accessible(&state.pool, &user, id).await?.is_owner {
+        return Err(AppError::Forbidden("Only the owner can change who has access".into()));
+    }
+    // Read only after the owner check, so nobody else learns who a document is shared with.
+    let user_id: Uuid = user_id.parse().map_err(|_| AppError::ShareNotFound)?;
+    let removed = sqlx::query("DELETE FROM document_shares WHERE document_id = $1 AND user_id = $2")
+        .bind(id)
+        .bind(user_id)
+        .execute(&state.pool)
+        .await?
+        .rows_affected();
+    if removed == 0 {
+        return Err(AppError::ShareNotFound);
+    }
+    Ok(StatusCode::NO_CONTENT)
 }

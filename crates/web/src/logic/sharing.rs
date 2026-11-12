@@ -1,6 +1,7 @@
 //! Sharing helpers: splitting the document list, labelling ownership and checking the share form.
 
-use shared::DocumentSummary;
+use shared::{DocumentSummary, User};
+use uuid::Uuid;
 
 /// Ownership line shown next to a document: the viewer's own, or who shared it.
 pub fn owner_label(is_owner: bool, owner_name: &str) -> String {
@@ -14,6 +15,16 @@ pub fn owner_label(is_owner: bool, owner_name: &str) -> String {
 /// Splits the list response into (owned by the caller, shared with the caller), keeping the order.
 pub fn split_documents(docs: Vec<DocumentSummary>) -> (Vec<DocumentSummary>, Vec<DocumentSummary>) {
     docs.into_iter().partition(|d| d.is_owner)
+}
+
+/// The share list without one person, keeping the order of the rest.
+pub fn without_user(users: Vec<User>, id: Uuid) -> Vec<User> {
+    users.into_iter().filter(|u| u.id != id).collect()
+}
+
+/// Accessible name of a person's Remove button, so screen readers can tell the buttons apart.
+pub fn remove_label(name: &str) -> String {
+    format!("Remove {name}")
 }
 
 /// Checks the share form input and returns the email the server compares against: trimmed and lower-cased.
@@ -35,7 +46,6 @@ pub fn validate_share_email(input: &str, own_email: &str) -> Result<String, Stri
 #[cfg(test)]
 mod tests {
     use super::*;
-    use shared::{DocumentSummary, User};
 
     fn summary(title: &str, is_owner: bool) -> DocumentSummary {
         DocumentSummary {
@@ -93,6 +103,24 @@ mod tests {
     fn an_empty_list_splits_into_two_empty_lists() {
         let (owned, shared) = split_documents(Vec::new());
         assert!(owned.is_empty() && shared.is_empty());
+    }
+
+    fn person(name: &str) -> User {
+        User { id: uuid::Uuid::new_v4(), email: format!("{name}@ajaia.test"), name: name.to_string() }
+    }
+
+    #[test]
+    fn removing_a_person_keeps_the_order_of_the_others() {
+        let people = vec![person("Bob"), person("Carol"), person("Dan")];
+        let carol = people[1].id;
+        let left = without_user(people, carol);
+        let names: Vec<&str> = left.iter().map(|u| u.name.as_str()).collect();
+        assert_eq!(names, ["Bob", "Dan"]);
+    }
+
+    #[test]
+    fn the_remove_label_names_the_person() {
+        assert_eq!(remove_label("Bob"), "Remove Bob");
     }
 
     #[test]
